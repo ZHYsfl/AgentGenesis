@@ -1,0 +1,8 @@
+FROM python:3.12-slim
+
+RUN pip install --no-cache-dir uv \
+    && uv venv --seed /workspace/.venv \
+    && uv pip install --python /workspace/.venv/bin/python --no-cache-dir grpcio docker agent-genesis
+
+ENV PATH="/workspace/.venv/bin:$PATH"
+WORKDIR /workspace
