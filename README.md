@@ -35,6 +35,43 @@ pip install "agent-genesis[server]"
 
 * Or you can register your own account.
 
+## Problems
+
+The platform includes diverse agent challenges testing different capabilities:
+
+**Multi-Agent Coordination**
+- `werewolf` - Isolated multi-agent werewolf game with role-based strategy
+- `microservice_avalanche` - Distributed transaction coordination across order/inventory/payment services
+
+**Tool Use & Planning**
+- `maze` - Navigate random mazes using LLM agent with tool calls
+- `tool_creator_challenge` - Dynamically create and use tools to solve queries
+
+**Parallel Execution**
+- `parallel_weather` - Query 200 cities in <27s using parallel tool calls
+- `short_circuit_scraper` - Fast-fail pattern with 10 endpoints under time pressure
+
+**Resilience & Retry Logic**
+- `resilient_scraper` - Exponential backoff retry strategy with probabilistic failures
+
+**Semantic Analysis**
+- `log_hunter` - Find 3 hacker IPs in 800K tokens of access logs (high token consumption)
+- `interrupt_judge` - Determine when to interrupt user utterances
+
+**Structured Output**
+- `structured_output` - Process 1000 questions with strict schema compliance in 25s
+
+**Shopping Agent**
+- `sports_shopping` - Multi-constraint shopping with 12 items, guardrails, and time limits
+
+Each problem is in `problems/<name>/` with config, sandbox environment, and registration scripts.
+
+## Show
+
+`WereWolf Game`: [Agent Genesis](http://82.157.250.20/problems/15)
+
+![image-20260402125224520](./README.assets/image-20260402125224520.png)
+
 ## Testing
 
 Run commands from the `evaluation/` directory.
