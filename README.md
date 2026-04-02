@@ -23,10 +23,6 @@ For server-side deployment (Docker sandbox + gRPC transport):
 pip install "agent-genesis[server]"
 ```
 
-## Documentation
-
-Full usage guide and examples: [https://agent-genesis-ai.com/docs](https://agent-genesis-ai.com/docs)
-
 ## Testing
 
 Run commands from the `evaluation/` directory.
