@@ -23,6 +23,18 @@ For server-side deployment (Docker sandbox + gRPC transport):
 pip install "agent-genesis[server]"
 ```
 
+## Platform
+
+[Agent Genesis](http://82.157.250.20/problems)
+
+* **public account for quick start:**
+
+`Username`: genesis
+
+`Password`:12345678
+
+* Or you can register your own account.
+
 ## Testing
 
 Run commands from the `evaluation/` directory.
