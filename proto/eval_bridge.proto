@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package agent_genesis.evaluation;
+
+message Empty {}
+
+message ReadyStatus {
+  bool is_ready = 1;
+  string message = 2;
+}
+
+message ProtocolEnvelope {
+  // Raw protocol JSON message. Protocol semantics remain unchanged.
+  string json_message = 1;
+}
+
+message SendAck {
+  bool ok = 1;
+  string error = 2;
+}
+
+message RecvRequest {
+  // Max wait for one message. <= 0 means blocking wait.
+  int32 timeout_ms = 1;
+}
+
+message RecvResponse {
+  bool has_message = 1;
+  string json_message = 2;
+}
+
+service SandboxBridge {
+  rpc CheckReady (Empty) returns (ReadyStatus);
+  rpc SendMessage (ProtocolEnvelope) returns (SendAck);
+  rpc RecvMessage (RecvRequest) returns (RecvResponse);
+}

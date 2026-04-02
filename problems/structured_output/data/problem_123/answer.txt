@@ -1,0 +1,1 @@
+{"id": 123, "name": "item_123", "active": true}

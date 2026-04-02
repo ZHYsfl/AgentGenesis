@@ -1,0 +1,1 @@
+{"order_id": 714, "customer": {"name": "customer_714", "vip": true}, "items": [{"sku": "SKU714-1", "qty": 1, "in_stock": false}, {"sku": "SKU714-2", "qty": 2, "in_stock": true}, {"sku": "SKU714-3", "qty": 3, "in_stock": false}], "total": 6}

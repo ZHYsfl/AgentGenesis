@@ -1,0 +1,38 @@
+# problems/log_hunter/sandbox/user_adapter.py
+"""
+User adapter for Log Hunter problem.
+"""
+
+from __future__ import annotations
+
+from types import SimpleNamespace
+from typing import Any, Optional
+import queue
+
+from agent_genesis.runtime.user_adapter import UserAdapter
+
+
+class LogHunterAdapter(UserAdapter):
+    def create_user_api(
+        self,
+        act_queue: "queue.Queue[Optional[dict[str, Any]]]",
+        obs_queue: "queue.Queue[Optional[Any]]",
+    ) -> Any:
+        def _call(action_name: str, **kwargs: Any) -> Any:
+            payload = {"type": action_name, **kwargs}
+            act_queue.put(payload)
+            obs = obs_queue.get()
+            if obs is None:
+                raise StopIteration("environment closed")
+            return obs
+
+        env = SimpleNamespace()
+        env.get_problem = lambda: _call("get_problem")
+        env.submit_answer = lambda answers: _call("submit_answer", answers=answers)
+        return env
+
+
+def get_adapter(preset_name: str = "log_hunter") -> UserAdapter:
+    if preset_name != "log_hunter":
+        raise RuntimeError(f"unsupported adapter preset for log_hunter: {preset_name}")
+    return LogHunterAdapter()

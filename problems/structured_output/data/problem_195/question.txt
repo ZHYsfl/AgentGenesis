@@ -1,0 +1,6 @@
+Return a JSON object with exactly these fields:
+- "id": 195
+- "name": "item_195"
+- "active": true
+
+Respond with ONLY the JSON object, no other text.

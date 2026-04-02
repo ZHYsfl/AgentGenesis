@@ -1,0 +1,7 @@
+Return a JSON object representing an order:
+- "order_id": 672
+- "customer": {"name": "customer_672", "vip": true}
+- "items": an array of 3 objects, each with "sku" (string "SKU672-N" where N is 1,2,3), "qty" (integer N), "in_stock" (boolean, true if N is even)
+- "total": 6
+
+Respond with ONLY the JSON object, no other text.

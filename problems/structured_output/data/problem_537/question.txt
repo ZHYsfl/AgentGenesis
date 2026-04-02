@@ -1,0 +1,6 @@
+Return a JSON object with exactly these fields:
+- "id": 537
+- "tags": ["tag_a", "tag_b"]
+- "metadata": {"level": "medium", "index": 537}
+
+Respond with ONLY the JSON object, no other text.
