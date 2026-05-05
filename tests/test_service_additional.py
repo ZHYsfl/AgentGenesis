@@ -7,9 +7,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from .. import service as worker_mod
-from ..models import CaseResult, CaseStatus, PhaseConfig, PhaseResult, PhaseStatus, RuntimeConfig, UserSubmission
-from ..service import DEFAULT_SUBMISSION_TIMEOUT, EvaluationService, SubmissionTask
+import evaluation.service as worker_mod
+from evaluation.models import CaseResult, CaseStatus, PhaseConfig, PhaseResult, PhaseStatus, RuntimeConfig, UserSubmission
+from evaluation.service import DEFAULT_SUBMISSION_TIMEOUT, EvaluationService, SubmissionTask
 
 
 class _Client:
@@ -36,14 +36,7 @@ class _Client:
         self.reported.append((submit_id, result.status.value))
         return True
 
-    def report_case_status(
-        self,
-        submit_id: int,
-        case_index: int,
-        status: str,
-        case_id: int | None = None,
-    ) -> bool:
-        _ = case_id
+    def report_case_status(self, submit_id: int, case_index: int, status: str) -> bool:
         self.case_status.append((submit_id, case_index, status))
         return True
 

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from ..base import BaseEvaluator
-from ..models import CaseResult, PhaseConfig, PhaseResult, PhaseStatus, UserSubmission
+from evaluation.base import BaseEvaluator
+from evaluation.models import CaseResult, PhaseConfig, PhaseResult, PhaseStatus, UserSubmission
 
 
 class DemoEvaluator(BaseEvaluator):
@@ -22,7 +22,7 @@ def test_base_evaluator_client_cache(monkeypatch) -> None:
         def __init__(self) -> None:
             self.marker = "ok"
 
-    from .. import client as client_mod
+    import evaluation.client as client_mod
 
     monkeypatch.setattr(client_mod, "EvaluationClient", DummyClient)
     cfg = PhaseConfig()

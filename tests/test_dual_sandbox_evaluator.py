@@ -2,22 +2,22 @@ from __future__ import annotations
 
 import json
 
-from ..dual_sandbox_evaluator import DualSandboxEvaluator, MessageType
-from ..models import CaseResult, CaseStatus, PhaseConfig, PhaseStatus, RuntimeConfig, UserSubmission
-from ..runtime.artifact import filter_requirements
-from ..runtime.gateway import (
+import evaluation.dual_sandbox_evaluator as dse_mod
+from evaluation.dual_sandbox_evaluator import DualSandboxEvaluator, MessageType
+from evaluation.models import CaseResult, CaseStatus, PhaseConfig, PhaseStatus, RuntimeConfig, UserSubmission
+from evaluation.runtime.artifact import filter_requirements
+from evaluation.runtime.gateway import (
     attach_llm_usage_delta,
     create_gateway_token_for_user,
     revoke_gateway_token,
 )
-from ..runtime.history import (
+from evaluation.runtime.history import (
     attach_case_history,
     extract_history_events,
     record_action_history,
 )
-from ..runtime.sandbox import load_grpc_bridge_support_files
-from ..runtime.results import parse_case_result
-from .. import dual_sandbox_evaluator as dse_mod
+from evaluation.runtime.sandbox import load_grpc_bridge_support_files
+from evaluation.runtime.results import parse_case_result
 
 
 def _config(**kwargs) -> PhaseConfig:
@@ -110,7 +110,7 @@ def test_attach_case_history_fallback_to_plain_text(monkeypatch) -> None:
 
 def test_with_step_deadline_uses_case_idle_timeout(monkeypatch) -> None:
     ev = DualSandboxEvaluator(_config(case_idle_timeout=5))
-    monkeypatch.setattr("agent_genesis.dual_sandbox_evaluator.time.time", lambda: 100.0)
+    monkeypatch.setattr("evaluation.dual_sandbox_evaluator.time.time", lambda: 100.0)
     assert ev._with_step_deadline(200.0) == 105.0
     assert DualSandboxEvaluator(_config(case_idle_timeout=0))._with_step_deadline(200.0) == 200.0
 

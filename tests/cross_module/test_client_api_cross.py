@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from ...client import EvaluationClient
+from evaluation.client import EvaluationClient
 
 
 @pytest.fixture(scope="module")
@@ -45,7 +45,7 @@ def test_get_version_diff(api_client: EvaluationClient, cross_slug: str) -> None
 @pytest.mark.cross_module
 def test_list_create_revisions(api_client: EvaluationClient, cross_slug: str) -> None:
     """Create revision via API, then list and verify."""
-    from ...api import create_revision
+    from evaluation.api import create_revision
     cfg = {"phase_order": 1, "phase_name": "Cross Rev", "phase_type": "agent", "phase_level": "Easy",
            "language": "en", "artifact_base64": _minimal_artifact_b64(), "description": "x", "starter_code": "# x"}
     rev = create_revision(cross_slug, "CrossRev Title", cfg, description="desc", client=api_client)

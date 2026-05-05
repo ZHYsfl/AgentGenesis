@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from ...client import EvaluationClient
+from evaluation.client import EvaluationClient
 
 
 @pytest.fixture(scope="module")
@@ -37,7 +37,7 @@ def test_create_eval_case(
     submit_id_claimed: int,
 ) -> None:
     """create_case_record returns dict with case_id and optional OSS URLs."""
-    from ...models import CaseResult, CaseStatus
+    from evaluation.models import CaseResult, CaseStatus
 
     case = CaseResult(
         case_index=0,

@@ -10,8 +10,8 @@ from typing import Any
 
 import pytest
 
-from ..runtime import judge_runtime as judge_mod
-from ..runtime import user_runtime as user_mod
+from evaluation.runtime import judge_runtime as judge_mod
+from evaluation.runtime import user_runtime as user_mod
 
 
 class _FakeServer:
@@ -151,7 +151,7 @@ def test_serve_judge_runtime_bootstrap_and_error_report(monkeypatch) -> None:
 
 
 def test_bridge_main_user_runtime_paths(monkeypatch) -> None:
-    from ..runtime.user_adapter import UserAdapter
+    from evaluation.runtime.user_adapter import UserAdapter
 
     class _MazeLikeAdapter(UserAdapter):
         def create_user_api(self, act_queue, obs_queue):  # type: ignore[no-untyped-def]
@@ -309,7 +309,7 @@ def test_user_bridge_servicer_and_serve_user_runtime(monkeypatch) -> None:
 
 def test_user_runtime_no_hardcoded_direction() -> None:
     """Anti-regression: evaluation runtime must not hardcode Maze-specific action shape."""
-    from ..runtime import user_runtime as ur
+    import evaluation.runtime.user_runtime as ur
     from pathlib import Path
     src = Path(ur.__file__ or "").resolve()
     if src.suffix == ".pyc":
@@ -322,8 +322,8 @@ def test_user_runtime_no_hardcoded_direction() -> None:
 
 def test_user_adapter_from_problem_module_produces_direction_action(monkeypatch) -> None:
     """Problem adapter module can define action payload semantics."""
-    from ..runtime.user_adapter import get_adapter
-    from ..runtime.user_adapter import UserAdapter
+    from evaluation.runtime.user_adapter import get_adapter
+    from evaluation.runtime.user_adapter import UserAdapter
 
     class _MazeLikeAdapter(UserAdapter):
         def create_user_api(self, act_queue, obs_queue):  # type: ignore[no-untyped-def]

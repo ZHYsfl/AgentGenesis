@@ -91,10 +91,6 @@ def run_pair_protocol_router(
     on_case_end: Optional[Callable[[int, CaseResult], None]],
     track_per_case_usage: bool,
     attach_llm_usage_delta: Optional[Callable[[CaseResult], CaseResult]] = None,
-    # Optional callbacks for local evaluation (do not affect remote)
-    on_observation: Optional[Callable[[int, dict[str, Any]], None]] = None,
-    on_action: Optional[Callable[[int, dict[str, Any]], None]] = None,
-    on_error: Optional[Callable[[int, str], None]] = None,
 ) -> ProtocolRunState:
     cases: list[CaseResult] = []
     case_histories: dict[int, list[dict[str, Any]]] = {}
@@ -171,9 +167,6 @@ def run_pair_protocol_router(
         if msg_type == MessageType.OBSERVATION:
             ensure_user_runtime()
             record_observation_history(case_histories, current_case_index, msg)
-            # Emit observation event for local evaluation
-            if on_observation:
-                on_observation(current_case_index, msg)
             user_msg = sanitize_user_message(msg)
             remaining = max(1, int(deadline - time.time()))
             try:
@@ -193,9 +186,6 @@ def run_pair_protocol_router(
                 request_user_action(msg),
             )
             record_action_history(case_histories, current_case_index, action_msg)
-            # Emit action event for local evaluation
-            if on_action:
-                on_action(current_case_index, action_msg)
             remaining = max(1, int(deadline - time.time()))
             send_to_judge(action_msg, remaining)
             continue
@@ -235,11 +225,7 @@ def run_pair_protocol_router(
             break
 
         if msg_type == MessageType.ERROR:
-            error_msg = msg.get("error", "")
-            logger.error("[%s] judge error: %s", submission_id, error_msg)
-            # Emit error event for local evaluation
-            if on_error:
-                on_error(current_case_index, error_msg)
+            logger.error("[%s] judge error: %s", submission_id, msg.get("error"))
             break
 
         logger.debug("[%s] unknown msg type: %s", submission_id, msg_type)

@@ -4,9 +4,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from .. import api
-from ..base import BaseEvaluator
-from ..models import PhaseConfig
+import evaluation.api as api
+from evaluation.base import BaseEvaluator
+from evaluation.models import PhaseConfig
 
 
 class DummyEvaluator(BaseEvaluator):
@@ -207,7 +207,7 @@ def test_runtime_entry_wrappers_and_phase_file_diff_wrappers(monkeypatch) -> Non
             captured["worker_ran"] = True
 
     monkeypatch.setattr(api, "EvaluationClient", DummyClient)
-    monkeypatch.setattr("agent_genesis.service.EvaluationService", DummyWorker)
+    monkeypatch.setattr("evaluation.service.EvaluationService", DummyWorker)
 
     c = api.create_client(backend_url="http://b", api_key="k")
     assert captured["client_init"] == {"base_url": "http://b", "api_key": "k"}

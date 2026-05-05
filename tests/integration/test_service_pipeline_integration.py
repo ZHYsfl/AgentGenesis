@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from ... import client as client_mod
-from ... import service as worker_mod
-from ...client import EvaluationClient
-from ...models import CaseResult, CaseStatus, PhaseResult, PhaseStatus
-from ...service import EvaluationService
+import evaluation.client as client_mod
+import evaluation.service as worker_mod
+from evaluation.client import EvaluationClient
+from evaluation.models import CaseResult, CaseStatus, PhaseResult, PhaseStatus
+from evaluation.service import EvaluationService
 
 
 def _mount_requests(monkeypatch, fake_transport) -> None:

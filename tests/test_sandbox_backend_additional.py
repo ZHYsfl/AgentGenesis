@@ -5,8 +5,8 @@ import tarfile
 from types import SimpleNamespace
 from typing import Any
 
-from .. import sandbox_backend as sb_mod
-from ..sandbox_backend import DockerSandbox, ExecHandle
+import evaluation.sandbox_backend as sb_mod
+from evaluation.sandbox_backend import DockerSandbox, ExecHandle
 
 
 class _FakeAPI:

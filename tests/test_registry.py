@@ -11,8 +11,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ..models import PhaseConfig, ProblemConfig
-from ..registry import (
+from evaluation.models import PhaseConfig, ProblemConfig
+from evaluation.registry import (
     ProblemRegistry,
     compute_artifact_checksum,
     inject_visibility_manifest,
@@ -129,7 +129,7 @@ class TestPreparePhaseData:
     def _make_registry() -> ProblemRegistry:
         """Create a registry without singleton side effects."""
         reg = object.__new__(ProblemRegistry)
-        reg.mode = __import__("agent_genesis.config", fromlist=["ClientMode"]).ClientMode.WORKER
+        reg.mode = __import__("evaluation.config", fromlist=["ClientMode"]).ClientMode.WORKER
         reg.api_key = "test-key"
         reg.backend_url = "http://localhost:9999"
         reg._problems = {}
@@ -261,7 +261,7 @@ class TestRegisterPhasePayload:
     @staticmethod
     def _make_registry() -> ProblemRegistry:
         reg = object.__new__(ProblemRegistry)
-        reg.mode = __import__("agent_genesis.config", fromlist=["ClientMode"]).ClientMode.WORKER
+        reg.mode = __import__("evaluation.config", fromlist=["ClientMode"]).ClientMode.WORKER
         reg.api_key = "test-key"
         reg.backend_url = "http://localhost:9999"
         reg._problems = {}
@@ -290,7 +290,7 @@ class TestRegisterPhasePayload:
 
         with (
             patch.object(reg, "_get_existing_checksum", return_value=""),
-            patch("agent_genesis.registry.requests.post", side_effect=mock_post),
+            patch("evaluation.registry.requests.post", side_effect=mock_post),
         ):
             reg._register_phase(problem, phase, _allow_fallback=False)
 
@@ -314,7 +314,7 @@ class TestRegisterPhasePayload:
 
         with (
             patch.object(reg, "_get_existing_checksum", return_value=""),
-            patch("agent_genesis.registry.requests.post", side_effect=mock_post),
+            patch("evaluation.registry.requests.post", side_effect=mock_post),
         ):
             reg._register_phase(problem, phase, _allow_fallback=False)
 
@@ -333,7 +333,7 @@ class TestCreateRevisionPayload:
     @staticmethod
     def _make_registry() -> ProblemRegistry:
         reg = object.__new__(ProblemRegistry)
-        reg.mode = __import__("agent_genesis.config", fromlist=["ClientMode"]).ClientMode.WORKER
+        reg.mode = __import__("evaluation.config", fromlist=["ClientMode"]).ClientMode.WORKER
         reg.api_key = "test-key"
         reg.backend_url = "http://localhost:9999"
         reg._problems = {}
@@ -363,7 +363,7 @@ class TestCreateRevisionPayload:
 
         with (
             patch.object(reg, "_get_existing_checksum", return_value=""),
-            patch("agent_genesis.registry.requests.post", side_effect=mock_post),
+            patch("evaluation.registry.requests.post", side_effect=mock_post),
         ):
             reg._create_revision(problem, phase)
 
@@ -397,7 +397,7 @@ class TestCreateRevisionPayload:
 
         with (
             patch.object(reg, "_get_existing_checksum", return_value=""),
-            patch("agent_genesis.registry.requests.post", side_effect=mock_post),
+            patch("evaluation.registry.requests.post", side_effect=mock_post),
         ):
             reg._create_revision(problem, phase)
 
@@ -427,7 +427,7 @@ class TestCreateRevisionPayload:
 
         with (
             patch.object(reg, "_get_existing_checksum", return_value=""),
-            patch("agent_genesis.registry.requests.post", side_effect=mock_post),
+            patch("evaluation.registry.requests.post", side_effect=mock_post),
         ):
             reg._create_revision(problem, phase)
 

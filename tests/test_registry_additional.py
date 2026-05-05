@@ -10,10 +10,10 @@ import zipfile
 
 import pytest
 
-from .. import registry as reg_mod
-from ..config import ClientMode
-from ..models import PhaseConfig, ProblemConfig
-from ..registry import ProblemRegistry, build_artifact_from_dir
+import evaluation.registry as reg_mod
+from evaluation.config import ClientMode
+from evaluation.models import PhaseConfig, ProblemConfig
+from evaluation.registry import ProblemRegistry, build_artifact_from_dir
 
 
 def _problem() -> ProblemConfig:

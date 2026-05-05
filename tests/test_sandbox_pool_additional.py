@@ -4,8 +4,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from .. import sandbox_pool as sp
-from ..sandbox_backend import Sandbox, CommandResult
+import evaluation.sandbox_pool as sp
+from evaluation.sandbox_backend import Sandbox, CommandResult
 
 
 class _FakeSemaphore:

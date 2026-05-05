@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ..config import SystemConfig, get_config
+from evaluation.config import SystemConfig, get_config
 
 
 def test_system_config_from_env(monkeypatch) -> None:

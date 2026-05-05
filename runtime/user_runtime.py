@@ -40,14 +40,13 @@ def bridge_main(
     *,
     solve_attr_name: str = "solve",
     adapter_preset: str = "default",
-    agent_id: str = "",
 ) -> None:
     obs_queue: queue.Queue[Optional[Any]] = queue.Queue()
     act_queue: queue.Queue[Optional[dict[str, Any]]] = queue.Queue()
     error_info: list[Optional[str]] = [None, None]
 
     adapter = get_adapter(adapter_preset)
-    config = AdapterConfig(solve_attr_name=solve_attr_name, agent_id=agent_id)
+    config = AdapterConfig(solve_attr_name=solve_attr_name)
     user_api = adapter.create_user_api(act_queue, obs_queue)
 
     def _user_thread() -> None:
@@ -109,18 +108,15 @@ class UserBridgeServicer(eval_bridge_pb2_grpc.SandboxBridgeServicer):
         *,
         solve_attr_name: str = "solve",
         adapter_preset: str = "default",
-        agent_id: str = "",
     ) -> None:
         self._inbound_queue: "queue.Queue[Optional[dict[str, Any]]]" = queue.Queue()
         self._outbound_queue: "queue.Queue[dict[str, Any]]" = queue.Queue()
-        self._agent_id = agent_id
         self._bridge_thread = threading.Thread(
             target=bridge_main,
             args=(self._inbound_queue, self._outbound_queue),
             kwargs={
                 "solve_attr_name": solve_attr_name,
                 "adapter_preset": adapter_preset,
-                "agent_id": agent_id,
             },
             daemon=True,
         )
@@ -171,7 +167,7 @@ def serve_user_runtime(
     solve_attr_name: str = "solve",
     adapter_preset: str = "default",
 ) -> None:
-    """Start gRPC server for user bridge (single agent mode - v1)."""
+    """Start gRPC server for user bridge."""
     grpc_port = int(os.getenv("SANDBOX_GRPC_PORT", os.getenv("USER_GRPC_PORT", "50052")))
 
     servicer = UserBridgeServicer(
@@ -192,57 +188,3 @@ def serve_user_runtime(
     grpc_server.start()
 
     grpc_server.wait_for_termination()
-
-
-def serve_shared_user_runtime(
-    *,
-    agent_ids: list[str],
-    solve_attr_names: dict[str, str],
-    adapter_preset: str = "shared_multi_agent",
-    base_port: int = 50052,
-) -> None:
-    """Start gRPC servers for shared multi-agent mode (v2).
-
-    Each agent runs in the same container but connects via separate gRPC ports.
-
-    Args:
-        agent_ids: List of agent IDs (e.g., ["agent_1", "agent_2"])
-        solve_attr_names: Dict mapping agent_id to solve function name
-                         (e.g., {"agent_1": "solve_agent_1", "agent_2": "solve_agent_2"})
-        adapter_preset: Adapter preset to use
-        base_port: Base port number, each agent gets base_port + index
-    """
-    _MAX_MSG = 50 * 1024 * 1024
-
-    # Start a gRPC server for each agent
-    servers = []
-
-    for idx, agent_id in enumerate(agent_ids):
-        grpc_port = base_port + idx
-
-        solve_attr_name = solve_attr_names.get(agent_id, f"solve_{agent_id}")
-
-        servicer = UserBridgeServicer(
-            solve_attr_name=solve_attr_name,
-            adapter_preset=adapter_preset,
-            agent_id=agent_id,
-        )
-
-        grpc_server = grpc.server(
-            futures.ThreadPoolExecutor(max_workers=8),
-            options=[
-                ("grpc.max_receive_message_length", _MAX_MSG),
-                ("grpc.max_send_message_length", _MAX_MSG),
-            ],
-        )
-        eval_bridge_pb2_grpc.add_SandboxBridgeServicer_to_server(servicer, grpc_server)
-        grpc_server.add_insecure_port(f"[::]:{grpc_port}")
-        print(f"[user_bridge/{agent_id}] grpc listening on {grpc_port}", file=sys.stderr, flush=True)
-        grpc_server.start()
-        servers.append(grpc_server)
-
-    print(f"[user_bridge] started {len(agent_ids)} agent bridges", file=sys.stderr, flush=True)
-
-    # Wait for all servers
-    for server in servers:
-        server.wait_for_termination()

@@ -15,19 +15,18 @@ from typing import Any, Callable, Union
 import pytest
 import requests
 
-from .. import dual_sandbox_evaluator as dse_mod
-from ..dual_sandbox_evaluator import DualSandboxEvaluator
-from ..models import PhaseConfig, RuntimeConfig, UserSubmission
-from ..proto import eval_bridge_pb2 as pb2_mod
-from ..proto import eval_bridge_pb2_grpc as pb2_grpc_mod
-from ..runtime import artifact as artifact_mod
-from ..runtime import gateway as gateway_mod
-from ..runtime import history as history_mod
-from ..runtime import process as process_mod
-from ..runtime import results as results_mod
-from ..runtime import sandbox as sandbox_mod
-from ..runtime import user_adapter as user_adapter_mod
-from ..sandbox_backend import CommandResult, ExecHandle, Sandbox
+import evaluation.dual_sandbox_evaluator as dse_mod
+from evaluation.models import PhaseConfig, RuntimeConfig, UserSubmission
+from evaluation.proto import eval_bridge_pb2 as pb2_mod
+from evaluation.proto import eval_bridge_pb2_grpc as pb2_grpc_mod
+from evaluation.runtime import artifact as artifact_mod
+from evaluation.runtime import gateway as gateway_mod
+from evaluation.runtime import history as history_mod
+from evaluation.runtime import process as process_mod
+from evaluation.runtime import results as results_mod
+from evaluation.runtime import sandbox as sandbox_mod
+from evaluation.runtime import user_adapter as user_adapter_mod
+from evaluation.sandbox_backend import CommandResult, ExecHandle, Sandbox
 
 
 class _DummyResponse:
@@ -261,7 +260,7 @@ def test_process_manager_paths() -> None:
 
 
 def test_phase_config_pip_deps_whitelist_validation() -> None:
-    from ..models import PhaseConfig
+    from evaluation.models import PhaseConfig
 
     PhaseConfig(pip_dependencies=[], allowed_packages=[])
 
