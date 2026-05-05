@@ -13,3 +13,4 @@ __pycache__
 *.pyc
 py.typed
 genesis-sandbox-base.tar
+local/.env
