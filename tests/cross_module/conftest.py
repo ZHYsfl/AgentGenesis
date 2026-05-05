@@ -39,8 +39,8 @@ def patch_config_for_cross_module(backend_url: str):
     user_api_key = os.getenv("AGENT_GENESIS_API_KEY", "")
     request_timeout = int(os.getenv("REQUEST_TIMEOUT", "30"))
 
-    from ... import client as client_mod
-    from ... import registry as registry_mod
+    import evaluation.client as client_mod
+    import evaluation.registry as registry_mod
 
     # evaluation/config.py loads .env with override=True on import, which can
     # overwrite subprocess-provided env vars. Re-assert test-specific values.

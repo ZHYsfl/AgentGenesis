@@ -16,7 +16,6 @@ DEFAULT_SOLVE_ATTR_NAME = "solve"
 @dataclass
 class AdapterConfig:
     solve_attr_name: str = DEFAULT_SOLVE_ATTR_NAME
-    agent_id: str = ""  # For v2 shared multi-agent mode
 
 
 @runtime_checkable

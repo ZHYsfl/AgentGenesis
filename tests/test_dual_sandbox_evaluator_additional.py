@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from .. import dual_sandbox_evaluator as dse_mod
-from ..config import SystemConfig
-from ..dual_sandbox_evaluator import DualSandboxEvaluator
-from ..models import CaseResult, CaseStatus, PhaseConfig, PhaseStatus, RuntimeConfig, UserSubmission
+import evaluation.dual_sandbox_evaluator as dse_mod
+from evaluation.config import SystemConfig
+from evaluation.dual_sandbox_evaluator import DualSandboxEvaluator
+from evaluation.models import CaseResult, CaseStatus, PhaseConfig, PhaseStatus, RuntimeConfig, UserSubmission
 
 
 def _cfg(**kwargs) -> PhaseConfig:

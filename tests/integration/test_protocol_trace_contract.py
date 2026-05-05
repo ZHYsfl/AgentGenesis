@@ -5,14 +5,14 @@ from __future__ import annotations
 import json
 import time
 
-from ...models import CaseStatus
-from ...runtime.history import (
+from evaluation.models import CaseStatus
+from evaluation.runtime.history import (
     attach_case_history,
     record_action_history,
     record_observation_history,
 )
-from ...runtime.results import parse_case_result
-from ...runtime.router import run_pair_protocol_router
+from evaluation.runtime.results import parse_case_result
+from evaluation.runtime.router import run_pair_protocol_router
 
 
 def test_protocol_trace_contract_is_stable() -> None:

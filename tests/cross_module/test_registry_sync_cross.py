@@ -10,9 +10,9 @@ import zipfile
 
 import pytest
 
-from ...config import ClientMode
-from ...models import PhaseConfig, ProblemConfig
-from ...registry import ProblemRegistry
+from evaluation.config import ClientMode
+from evaluation.models import PhaseConfig, ProblemConfig
+from evaluation.registry import ProblemRegistry
 
 
 def _make_artifact_b64(marker: str = "cross-test") -> str:

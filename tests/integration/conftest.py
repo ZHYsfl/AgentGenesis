@@ -9,7 +9,7 @@ from typing import Any
 
 import pytest
 
-from ...models import PhaseConfig, RuntimeConfig, UserSubmission
+from evaluation.models import PhaseConfig, RuntimeConfig, UserSubmission
 
 
 class DummyResponse:

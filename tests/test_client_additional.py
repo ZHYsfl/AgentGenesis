@@ -7,9 +7,9 @@ from types import SimpleNamespace
 import pytest
 import requests
 
-from .. import client as client_mod
-from ..client import EvaluationClient
-from ..models import CaseResult, CaseStatus, PhaseResult, PhaseStatus
+import evaluation.client as client_mod
+from evaluation.client import EvaluationClient
+from evaluation.models import CaseResult, CaseStatus, PhaseResult, PhaseStatus
 
 
 def _cfg(**overrides):

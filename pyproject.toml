@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-genesis"
+version = "0.0.50"
+description = "Agent Genesis evaluation SDK."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache License 2.0" }
+authors = [
+  { name = "Zane" }
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+  "pydantic>=2",
+  "requests",
+  "python-dotenv",
+]
+
+[project.optional-dependencies]
+server = [
+  "grpcio",
+  "protobuf",
+  "docker>=7.0",
+]
+dev = [
+  "pytest",
+  "pytest-cov",
+  "grpcio-tools",
+]
+
+[project.urls]
+Homepage = "https://agent-genesis-ai.com"
+
+[tool.setuptools]
+packages = [
+  "agent_genesis",
+  "agent_genesis.runtime",
+  "agent_genesis.proto",
+  "agent_genesis.tool_calling",
+  "agent_genesis.local",
+]
+license-files = ["LICENSE"]
+
+[tool.setuptools.package-dir]
+"agent_genesis" = "."
+"agent_genesis.runtime" = "runtime"
+"agent_genesis.proto" = "proto"
+"agent_genesis.tool_calling" = "../tool_calling"
+"agent_genesis.local" = "local"
+
+[tool.setuptools.package-data]
+"agent_genesis" = ["py.typed"]

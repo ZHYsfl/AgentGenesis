@@ -9,41 +9,40 @@ import asyncio
 
 async def batch(agent: Agent, observations: list[list[dict]], max_concurrent: int = 20) -> list[list[dict]]:
     '''
-    Batch concurrent LLM calls with a maximum concurrency limit.
-
-    Uses a semaphore (Semaphore) to control concurrency: when a slot is free,
-    a new task is started immediately, keeping max_concurrent tasks running
-    until all tasks are completed.
-
+    批量并发调用LLM，支持限制最大并发数
+    
+    使用信号量(Semaphore)控制并发：当有空闲槽位时立即启动新任务，
+    始终保持 max_concurrent 个任务在运行，直到所有任务完成。
+    
     Args:
-        agent: Agent instance
-        observations: Initial context list for LLM, each context is list[dict]
-        max_concurrent: Maximum concurrent tasks, default 20
-
+        agent: Agent实例
+        observations: LLM的初始上下文列表，每个上下文是一个list[dict]
+        max_concurrent: 最大并发数，默认20
+    
     Returns:
-        list[list[dict]]: Results list, corresponding one-to-one with observations
+        list[list[dict]]: 结果列表，顺序与 observations 一一对应
     '''
     semaphore = asyncio.Semaphore(max_concurrent)
     num = len(observations)
 
-    assert num > 0, "observations cannot be empty"
-    assert max_concurrent > 0, "max_concurrent must be >= 1"
+    assert num > 0, "observations 不能为空"
+    assert max_concurrent > 0, "max_concurrent 不能小于1"
 
     async def _execute_with_index(idx: int) -> tuple[int, list[dict]]:
-        '''Execute single task, returns (index, result)'''
-        async with semaphore:  # Acquire slot, wait if no free slots
+        '''执行单个任务，返回(索引, 结果)'''
+        async with semaphore:  # 获取槽位，如果没有空闲槽位则等待
             result = await agent.chat(observations[idx])
             return idx, result
-
-    # Create all tasks (but controlled by semaphore, won't start all at once)
+    
+    # 创建所有任务（但受信号量控制，不会立即全部启动）
     tasks = [_execute_with_index(i) for i in range(num)]
-
-    # Collect all results (maintain order)
+    
+    # 收集所有结果（保持顺序）
     results_with_index = await asyncio.gather(*tasks)
-
-    # Sort by original index to ensure output order matches input
+    
+    # 按原始索引排序，确保返回顺序与输入一致
     results_with_index.sort(key=lambda x: x[0])
-
-    # Extract results
+    
+    # 提取结果
     results = [r[1] for r in results_with_index]
     return results

@@ -5,10 +5,10 @@ import time
 from types import SimpleNamespace
 from typing import Optional
 
-from ... import dual_sandbox_evaluator as dse_mod
-from ...dual_sandbox_evaluator import DualSandboxEvaluator, MessageType
-from ...models import CaseResult, CaseStatus, PhaseConfig, PhaseStatus
-from ...runtime.process import SandboxProcessHandle
+import evaluation.dual_sandbox_evaluator as dse_mod
+from evaluation.dual_sandbox_evaluator import DualSandboxEvaluator, MessageType
+from evaluation.models import CaseResult, CaseStatus, PhaseConfig, PhaseStatus
+from evaluation.runtime.process import SandboxProcessHandle
 
 
 class DummySandbox:

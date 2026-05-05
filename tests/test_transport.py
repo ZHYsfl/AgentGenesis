@@ -5,8 +5,8 @@ from typing import Any
 
 import pytest
 
-from .. import transport as transport_mod
-from ..transport import (
+import evaluation.transport as transport_mod
+from evaluation.transport import (
     GrpcSandboxTransport,
     SandboxTransportConnectionError,
     SandboxTransportError,

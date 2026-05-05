@@ -3,7 +3,7 @@ from __future__ import annotations
 import io
 from types import SimpleNamespace
 
-from .. import health as health
+import evaluation.health as health
 
 
 def _make_handler(path: str) -> health.HealthHandler:
@@ -48,7 +48,7 @@ def test_health_handler_endpoints_and_response_helpers(monkeypatch) -> None:
     handler5._send_response = lambda code, ctype, body: handler5.sent.__setitem__("payload", (code, ctype, body))  # type: ignore[attr-defined]
     health.HealthHandler.metrics_collector = SimpleNamespace(get_prometheus_metrics=lambda: "base\n")
     monkeypatch.setattr(
-        "agent_genesis.sandbox_pool.get_sandbox_stats",
+        "evaluation.sandbox_pool.get_sandbox_stats",
         lambda: {"current_active": 1, "max_concurrent": 2, "total_created": 3, "total_destroyed": 4},
     )
     handler5.do_GET()

@@ -11,7 +11,7 @@ from typing import Any, Callable
 import pytest
 
 
-# Ensure `from ...` relative imports work when pytest is run from repo root.
+# Ensure `import evaluation.*` works when pytest is run from repo root.
 ENV_DEMO_ROOT = Path(__file__).resolve().parents[2]
 if str(ENV_DEMO_ROOT) not in sys.path:
     sys.path.insert(0, str(ENV_DEMO_ROOT))

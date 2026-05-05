@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from .. import health as health
+import evaluation.health as health
 
 
 def setup_function() -> None:

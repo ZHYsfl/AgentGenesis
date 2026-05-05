@@ -7,7 +7,7 @@ from typing import Any
 
 import pytest
 
-from .. import sandbox_pool as sp
+import evaluation.sandbox_pool as sp
 
 
 def setup_function() -> None:

@@ -1,0 +1,9 @@
+requests
+pydantic
+python-dotenv
+pytest
+pytest-cov
+grpcio
+grpcio-tools
+protobuf
+docker

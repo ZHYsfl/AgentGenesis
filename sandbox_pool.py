@@ -12,7 +12,12 @@ import time
 from typing import Any, Optional
 
 from .config import get_config
-from .sandbox_backend import DockerSandbox, Sandbox, create_docker_sandbox
+from .sandbox_backend import (
+    DockerSandbox,
+    Sandbox,
+    create_docker_sandbox,
+    pip_index_env_from_host,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -246,14 +251,17 @@ class TemplateImagePool:
         import docker as docker_lib
 
         client = docker_lib.from_env()
-        container = client.containers.run(
-            image=base_image,
-            command=_keepalive_cmd(deps_timeout_seconds + 30),
-            detach=True,
-            stdin_open=True,
-            tty=False,
-            auto_remove=True,  # Auto-remove container after stop to prevent corpse accumulation
-        )
+        run_kw: dict[str, Any] = {
+            "image": base_image,
+            "command": _keepalive_cmd(deps_timeout_seconds + 30),
+            "detach": True,
+            "stdin_open": True,
+            "tty": False,
+        }
+        pip_env = pip_index_env_from_host()
+        if pip_env:
+            run_kw["environment"] = pip_env
+        container = client.containers.run(**run_kw)
         try:
             if pip_dependencies:
                 install_args = " ".join(shlex.quote(d) for d in pip_dependencies)
@@ -505,14 +513,6 @@ def destroy_sandbox(sandbox: Sandbox) -> None:
 
 def get_sandbox_stats() -> dict:
     return SandboxManager.get_instance().get_stats()
-
-
-def shutdown_all_sandboxes() -> None:
-    """Force destroy all active sandboxes. Used for emergency cleanup on Ctrl+C."""
-    try:
-        SandboxManager.get_instance().shutdown()
-    except Exception as e:
-        logger.warning("Emergency sandbox shutdown error: %s", e)
 
 
 def get_or_create_template(

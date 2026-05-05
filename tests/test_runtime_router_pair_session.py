@@ -9,10 +9,10 @@ from typing import Any, Optional
 
 import pytest
 
-from ..models import CaseResult, CaseStatus, PhaseConfig, RuntimeConfig, UserSubmission
-from ..runtime import pair_session as pair_mod
-from ..runtime.protocol import MessageType
-from ..runtime.router import run_pair_protocol_router
+from evaluation.models import CaseResult, CaseStatus, PhaseConfig, RuntimeConfig, UserSubmission
+from evaluation.runtime import pair_session as pair_mod
+from evaluation.runtime.protocol import MessageType
+from evaluation.runtime.router import run_pair_protocol_router
 
 
 class _DummyTransport:

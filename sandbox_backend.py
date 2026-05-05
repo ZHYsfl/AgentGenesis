@@ -211,6 +211,18 @@ class DockerSandbox(Sandbox):
 _DEFAULT_IMAGE = "genesis-sandbox-base:latest"
 
 
+def pip_index_env_from_host() -> dict[str, str]:
+    """Pass through PyPI mirror settings (e.g. UV_INDEX_URL) into sandbox containers."""
+    import os as _os
+
+    out: dict[str, str] = {}
+    for key in ("UV_INDEX_URL", "PIP_INDEX_URL"):
+        val = str(_os.environ.get(key, "") or "").strip()
+        if val:
+            out[key] = val
+    return out
+
+
 def _keepalive_cmd(seconds: int) -> list[str]:
     # Use absolute path to avoid PATH issues in minimal images.
     return ["/usr/bin/sleep", str(max(1, int(seconds)))]
@@ -240,8 +252,11 @@ def create_docker_sandbox(
         "network_mode": "bridge",
         "stdin_open": True,
         "tty": False,
-        "auto_remove": True,  # Auto-remove container after stop to prevent corpse accumulation
     }
+
+    pip_env = pip_index_env_from_host()
+    if pip_env:
+        kwargs["environment"] = pip_env
 
     if cpu_count and cpu_count > 0:
         kwargs["nano_cpus"] = int(cpu_count * 1e9)

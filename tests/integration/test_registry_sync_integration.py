@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import base64
 
-from ... import registry as registry_mod
-from ...config import ClientMode
-from ...models import PhaseConfig, ProblemConfig
-from ...registry import ProblemRegistry
+import evaluation.registry as registry_mod
+from evaluation.config import ClientMode
+from evaluation.models import PhaseConfig, ProblemConfig
+from evaluation.registry import ProblemRegistry
 
 
 def _problem() -> ProblemConfig:

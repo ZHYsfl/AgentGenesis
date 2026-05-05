@@ -1,3 +1,15 @@
 .venv
 .env
 __pycache__
+.specstory/
+.pytest_cache/
+.coverage
+.coveragerc
+.pytest_cache/
+.vscode/
+.cursor/
+.claude/
+
+*.pyc
+py.typed
+genesis-sandbox-base.tar

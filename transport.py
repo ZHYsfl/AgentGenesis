@@ -76,8 +76,8 @@ class GrpcSandboxTransport(SandboxTransport):
     ) -> None:
         self.target = resolve_grpc_target(host_or_target)
 
-        # Disable keepalive ping to avoid triggering "Too many pings" server limit
-        # INT_MAX ms (~24 days) effectively disables keepalive
+        # 不启用 keepalive ping，避免触发服务端 "Too many pings" 限制
+        # INT_MAX ms (~24 天) 相当于禁用
         channel_options = options or [
             ("grpc.max_receive_message_length", 50 * 1024 * 1024),
             ("grpc.max_send_message_length", 50 * 1024 * 1024),

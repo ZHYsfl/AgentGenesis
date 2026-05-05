@@ -8,11 +8,12 @@ from typing import Any
 
 import pytest
 
-from .. import isolated_evaluator as eval_pkg
-from .. import runtime as rt_pkg
-from ..runtime import isolated_session as iso_session_mod
-from ..isolated_evaluator import IsolatedMultiAgentEvaluator
-from ..models import (
+import evaluation as eval_pkg
+import evaluation.isolated_evaluator as iso_eval_mod
+import evaluation.runtime as rt_pkg
+import evaluation.runtime.isolated_session as iso_session_mod
+from evaluation.isolated_evaluator import IsolatedMultiAgentEvaluator
+from evaluation.models import (
     CaseResult,
     CaseStatus,
     PhaseConfig,
@@ -20,13 +21,13 @@ from ..models import (
     RuntimeConfig,
     UserSubmission,
 )
-from ..runtime.isolated_adapter import IsolatedAgentAdapter
-from ..runtime.isolated_session import (
+from evaluation.runtime.isolated_adapter import IsolatedAgentAdapter
+from evaluation.runtime.isolated_session import (
     AgentSandboxSpec,
     IsolatedMultiAgentSession,
     IsolatedSessionDeps,
 )
-from ..runtime.multi_agent_scaffold import run_multi_agent_case
+from evaluation.runtime.multi_agent_scaffold import run_multi_agent_case
 
 
 def _cfg(**kwargs: Any) -> PhaseConfig:
@@ -299,7 +300,7 @@ def test_multi_agent_scaffold_success_timeout_and_errors(monkeypatch) -> None:
     rt_timeout = _FakeRuntime([])
     seq = iter([100.0, 101.0, 101.0])  # start_time, loop check, elapsed
     real_time = time.time
-    monkeypatch.setattr("agent_genesis.runtime.multi_agent_scaffold.time.time", lambda: next(seq))
+    monkeypatch.setattr("evaluation.runtime.multi_agent_scaffold.time.time", lambda: next(seq))
     out_timeout = run_multi_agent_case(
         rt_timeout,  # type: ignore[arg-type]
         case_index=1,
@@ -315,7 +316,7 @@ def test_multi_agent_scaffold_success_timeout_and_errors(monkeypatch) -> None:
     )
     assert out_timeout["status"] == "tle"
     assert out_timeout["error"] == "timeout"
-    monkeypatch.setattr("agent_genesis.runtime.multi_agent_scaffold.time.time", real_time)
+    monkeypatch.setattr("evaluation.runtime.multi_agent_scaffold.time.time", real_time)
 
     # action error + null data path
     rt_error = _FakeRuntime([{"type": "action", "error": "boom", "status": "mle"}])
@@ -463,33 +464,33 @@ def test_isolated_evaluator_single_case_parallel_and_evaluate_paths(monkeypatch)
     ev = IsolatedMultiAgentEvaluator(cfg)
     sub = _submission(cfg)
 
-    monkeypatch.setattr(eval_pkg, "get_or_create_template", lambda **kwargs: "tmpl:v1")
-    monkeypatch.setattr(eval_pkg, "runtime_resolve_sandbox_resources", lambda config: (1, 256))
-    monkeypatch.setattr(eval_pkg, "runtime_load_grpc_bridge_support_files", lambda _: {"bridge.py": b"x"})
-    monkeypatch.setattr(eval_pkg, "runtime_write_files_chunked", lambda *args, **kwargs: None)
-    monkeypatch.setattr(eval_pkg, "runtime_build_judge_envs", lambda **kwargs: {"J": "1"})
-    monkeypatch.setattr(eval_pkg, "runtime_build_user_envs", lambda **kwargs: {"U": "1"})
-    monkeypatch.setattr(eval_pkg, "runtime_resolve_entrypoint", lambda config: "sandbox/run.py")
-    monkeypatch.setattr(eval_pkg, "runtime_is_likely_mle_exit", lambda config, sb, path: False)
+    monkeypatch.setattr(iso_eval_mod, "get_or_create_template", lambda **kwargs: "tmpl:v1")
+    monkeypatch.setattr(iso_eval_mod, "runtime_resolve_sandbox_resources", lambda config: (1, 256))
+    monkeypatch.setattr(iso_eval_mod, "runtime_load_grpc_bridge_support_files", lambda _: {"bridge.py": b"x"})
+    monkeypatch.setattr(iso_eval_mod, "runtime_write_files_chunked", lambda *args, **kwargs: None)
+    monkeypatch.setattr(iso_eval_mod, "runtime_build_judge_envs", lambda **kwargs: {"J": "1"})
+    monkeypatch.setattr(iso_eval_mod, "runtime_build_user_envs", lambda **kwargs: {"U": "1"})
+    monkeypatch.setattr(iso_eval_mod, "runtime_resolve_entrypoint", lambda config: "sandbox/run.py")
+    monkeypatch.setattr(iso_eval_mod, "runtime_is_likely_mle_exit", lambda config, sb, path: False)
     monkeypatch.setattr(
-        eval_pkg,
+        iso_eval_mod,
         "runtime_parse_case_result",
         lambda msg, idx: CaseResult(case_index=idx, status=CaseStatus.PASSED, score=100),
     )
-    monkeypatch.setattr(eval_pkg, "runtime_attach_case_history", lambda *args, **kwargs: None)
-    monkeypatch.setattr(eval_pkg, "runtime_record_observation_history", lambda *args, **kwargs: None)
-    monkeypatch.setattr(eval_pkg, "runtime_record_action_history", lambda *args, **kwargs: None)
-    monkeypatch.setattr(eval_pkg, "create_sandbox", lambda **kwargs: SimpleNamespace(id="sb"))
-    monkeypatch.setattr(eval_pkg, "destroy_sandbox", lambda sb: None)
-    monkeypatch.setattr(eval_pkg, "runtime_create_grpc_transport", lambda sb, port: _FakeTransport())
+    monkeypatch.setattr(iso_eval_mod, "runtime_attach_case_history", lambda *args, **kwargs: None)
+    monkeypatch.setattr(iso_eval_mod, "runtime_record_observation_history", lambda *args, **kwargs: None)
+    monkeypatch.setattr(iso_eval_mod, "runtime_record_action_history", lambda *args, **kwargs: None)
+    monkeypatch.setattr(iso_eval_mod, "create_sandbox", lambda **kwargs: SimpleNamespace(id="sb"))
+    monkeypatch.setattr(iso_eval_mod, "destroy_sandbox", lambda sb: None)
+    monkeypatch.setattr(iso_eval_mod, "runtime_create_grpc_transport", lambda sb, port: _FakeTransport())
     monkeypatch.setattr(
-        eval_pkg.SandboxProcessManager,
+        iso_eval_mod.SandboxProcessManager,
         "start_background_python",
         lambda **kwargs: SimpleNamespace(name="p"),
     )
-    monkeypatch.setattr(eval_pkg.SandboxProcessManager, "stop_process", lambda proc: None)
-    monkeypatch.setattr(eval_pkg.SandboxProcessManager, "is_process_alive", lambda proc: True)
-    monkeypatch.setattr(eval_pkg.SandboxProcessManager, "describe_process", lambda proc: "p")
+    monkeypatch.setattr(iso_eval_mod.SandboxProcessManager, "stop_process", lambda proc: None)
+    monkeypatch.setattr(iso_eval_mod.SandboxProcessManager, "is_process_alive", lambda proc: True)
+    monkeypatch.setattr(iso_eval_mod.SandboxProcessManager, "describe_process", lambda proc: "p")
 
     captured: dict[str, Any] = {}
 
@@ -500,7 +501,7 @@ def test_isolated_evaluator_single_case_parallel_and_evaluate_paths(monkeypatch)
         def run(self) -> CaseResult:
             return CaseResult(case_index=0, status=CaseStatus.PASSED, score=77)
 
-    monkeypatch.setattr(eval_pkg, "IsolatedMultiAgentSession", _FakeIsoSession)
+    monkeypatch.setattr(iso_eval_mod, "IsolatedMultiAgentSession", _FakeIsoSession)
 
     single = ev._run_single_case(
         submission=sub,
@@ -540,7 +541,7 @@ def test_isolated_evaluator_single_case_parallel_and_evaluate_paths(monkeypatch)
         return CaseResult(case_index=idx, status=CaseStatus.PASSED, score=1)
 
     monkeypatch.setattr(ev, "_run_single_case", _run_single_case_stub)
-    monkeypatch.setattr(eval_pkg, "get_config", lambda: SimpleNamespace(max_case_parallelism=8))
+    monkeypatch.setattr(iso_eval_mod, "get_config", lambda: SimpleNamespace(max_case_parallelism=8))
     cases = ev._run_parallel_cases(
         submission=sub,
         gateway_token=None,
@@ -560,24 +561,24 @@ def test_isolated_evaluator_single_case_parallel_and_evaluate_paths(monkeypatch)
 
     # evaluate: gateway token ValueError branch
     monkeypatch.setattr(
-        eval_pkg,
+        iso_eval_mod,
         "runtime_create_gateway_token_for_user",
         lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("token denied")),
     )
-    monkeypatch.setattr(eval_pkg, "runtime_revoke_gateway_token", lambda *args, **kwargs: None)
+    monkeypatch.setattr(iso_eval_mod, "runtime_revoke_gateway_token", lambda *args, **kwargs: None)
     token_fail = ev.evaluate(sub, parallel_cases=1)
     assert token_fail.status == PhaseStatus.ERROR
     assert "token denied" in (token_fail.error or "")
 
     # evaluate: success + failed aggregation path
-    monkeypatch.setattr(eval_pkg, "runtime_create_gateway_token_for_user", lambda *args, **kwargs: "tok")
-    monkeypatch.setattr(eval_pkg, "runtime_download_artifact", lambda *args, **kwargs: b"zip")
+    monkeypatch.setattr(iso_eval_mod, "runtime_create_gateway_token_for_user", lambda *args, **kwargs: "tok")
+    monkeypatch.setattr(iso_eval_mod, "runtime_download_artifact", lambda *args, **kwargs: b"zip")
     monkeypatch.setattr(
-        eval_pkg,
+        iso_eval_mod,
         "runtime_extract_artifact",
         lambda data: {"sandbox/run.py": b"print(1)", "sandbox/user_adapter.py": b"class A: pass"},
     )
-    monkeypatch.setattr(eval_pkg, "runtime_filter_requirements", lambda reqs, allow: reqs)
+    monkeypatch.setattr(iso_eval_mod, "runtime_filter_requirements", lambda reqs, allow: reqs)
     monkeypatch.setattr(
         ev,
         "_run_parallel_cases",
@@ -588,7 +589,7 @@ def test_isolated_evaluator_single_case_parallel_and_evaluate_paths(monkeypatch)
     )
     rev = {"ok": False}
     monkeypatch.setattr(
-        eval_pkg,
+        iso_eval_mod,
         "runtime_revoke_gateway_token",
         lambda *args, **kwargs: rev.__setitem__("ok", True),
     )
@@ -601,14 +602,14 @@ def test_isolated_evaluator_single_case_parallel_and_evaluate_paths(monkeypatch)
 
     # evaluate: missing requirements -> outer exception path
     sub_missing = _submission(cfg, files={"solution.py": "def solve_seer(env): pass"})
-    monkeypatch.setattr(eval_pkg, "runtime_create_gateway_token_for_user", lambda *args, **kwargs: "tok")
-    monkeypatch.setattr(eval_pkg, "runtime_download_artifact", lambda *args, **kwargs: b"zip")
+    monkeypatch.setattr(iso_eval_mod, "runtime_create_gateway_token_for_user", lambda *args, **kwargs: "tok")
+    monkeypatch.setattr(iso_eval_mod, "runtime_download_artifact", lambda *args, **kwargs: b"zip")
     monkeypatch.setattr(
-        eval_pkg,
+        iso_eval_mod,
         "runtime_extract_artifact",
         lambda data: {"sandbox/run.py": b"print(1)", "sandbox/user_adapter.py": b"class A: pass"},
     )
-    monkeypatch.setattr(eval_pkg, "runtime_revoke_gateway_token", lambda *args, **kwargs: None)
+    monkeypatch.setattr(iso_eval_mod, "runtime_revoke_gateway_token", lambda *args, **kwargs: None)
     missing = ev.evaluate(sub_missing, parallel_cases=1)
     assert missing.status == PhaseStatus.ERROR
     assert "Missing requirements.txt" in (missing.error or "")
@@ -741,14 +742,14 @@ def test_isolated_evaluator_additional_branches(monkeypatch) -> None:
 
     # template build failure path + requirements filtering + download_code fallback
     monkeypatch.setattr(
-        eval_pkg,
+        iso_eval_mod,
         "get_or_create_template",
         lambda **kwargs: (_ for _ in ()).throw(RuntimeError("no template")),
     )
-    monkeypatch.setattr(eval_pkg, "runtime_create_gateway_token_for_user", lambda *args, **kwargs: "tok")
-    monkeypatch.setattr(eval_pkg, "runtime_download_artifact", lambda *args, **kwargs: b"zip")
+    monkeypatch.setattr(iso_eval_mod, "runtime_create_gateway_token_for_user", lambda *args, **kwargs: "tok")
+    monkeypatch.setattr(iso_eval_mod, "runtime_download_artifact", lambda *args, **kwargs: b"zip")
     monkeypatch.setattr(
-        eval_pkg,
+        iso_eval_mod,
         "runtime_extract_artifact",
         lambda data: {
             "sandbox/run.py": b"print(1)",
@@ -756,7 +757,7 @@ def test_isolated_evaluator_additional_branches(monkeypatch) -> None:
             "wolf_agent/": b"",  # rel empty branch under npc prefix
         },
     )
-    monkeypatch.setattr(eval_pkg, "runtime_filter_requirements", lambda reqs, allow: "pytest\n")
+    monkeypatch.setattr(iso_eval_mod, "runtime_filter_requirements", lambda reqs, allow: "pytest\n")
     monkeypatch.setattr(
         ev,
         "_get_client",
@@ -772,7 +773,7 @@ def test_isolated_evaluator_additional_branches(monkeypatch) -> None:
         "_run_parallel_cases",
         lambda **kwargs: [CaseResult(case_index=0, status=CaseStatus.PASSED, score=100)],
     )
-    monkeypatch.setattr(eval_pkg, "runtime_revoke_gateway_token", lambda *args, **kwargs: None)
+    monkeypatch.setattr(iso_eval_mod, "runtime_revoke_gateway_token", lambda *args, **kwargs: None)
     ok = ev.evaluate(sub, parallel_cases=1)
     assert ok.status == PhaseStatus.SUCCESS
 
@@ -785,7 +786,7 @@ def test_isolated_evaluator_additional_branches(monkeypatch) -> None:
     # _run_parallel_cases safe_start/safe_end branch
     starts: list[int] = []
     ends: list[int] = []
-    monkeypatch.setattr(eval_pkg, "get_config", lambda: SimpleNamespace(max_case_parallelism=2))
+    monkeypatch.setattr(iso_eval_mod, "get_config", lambda: SimpleNamespace(max_case_parallelism=2))
     monkeypatch.setattr(
         ev,
         "_run_single_case",

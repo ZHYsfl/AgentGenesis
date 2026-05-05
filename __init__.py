@@ -78,10 +78,6 @@ __all__: list[str] = [
     "BaseEvaluator",
     "DualSandboxEvaluator",
     "IsolatedMultiAgentEvaluator",
-    # v2: Shared multi-agent session (experimental)
-    "SharedMultiAgentSession",
-    "run_shared_multi_agent_session",
-    "serve_shared_user_runtime",
     # models
     "PhaseConfig",
     "RuntimeConfig",
@@ -111,10 +107,6 @@ __all__: list[str] = [
 _SERVER_LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "DualSandboxEvaluator": (".dual_sandbox_evaluator", "DualSandboxEvaluator"),
     "IsolatedMultiAgentEvaluator": (".isolated_evaluator", "IsolatedMultiAgentEvaluator"),
-    # v2: Shared multi-agent session (experimental)
-    "SharedMultiAgentSession": (".runtime.pair_session", "SharedMultiAgentSession"),
-    "run_shared_multi_agent_session": (".runtime.pair_session", "run_shared_multi_agent_session"),
-    "serve_shared_user_runtime": (".runtime.user_runtime", "serve_shared_user_runtime"),
     "EvaluationService": (".service", "EvaluationService"),
     "Sandbox": (".sandbox_backend", "Sandbox"),
     "DockerSandbox": (".sandbox_backend", "DockerSandbox"),
@@ -155,4 +147,4 @@ try:
     from importlib.metadata import version as _pkg_version, PackageNotFoundError as _PNF
     __version__: str = _pkg_version("agent-genesis")
 except Exception:
-    __version__ = "0.0.48"
+    __version__ = "0.0.50"

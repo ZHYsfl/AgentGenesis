@@ -9,8 +9,8 @@ from types import SimpleNamespace
 import pytest
 import requests
 
-from ..client import EvaluationClient
-from ..models import CaseResult, CaseStatus, PhaseResult, PhaseStatus
+from evaluation.client import EvaluationClient
+from evaluation.models import CaseResult, CaseStatus, PhaseResult, PhaseStatus
 
 
 def _cfg(**overrides):
@@ -25,7 +25,7 @@ def _cfg(**overrides):
 
 
 def test_client_init_and_headers(monkeypatch) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg())
     c = EvaluationClient()
@@ -35,7 +35,7 @@ def test_client_init_and_headers(monkeypatch) -> None:
 
 
 def test_client_init_requires_internal_key(monkeypatch) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg(internal_api_key=""))
     with pytest.raises(ValueError):
@@ -43,7 +43,7 @@ def test_client_init_requires_internal_key(monkeypatch) -> None:
 
 
 def test_parse_submission_supports_json_string(monkeypatch, sample_submission_dict) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg())
     c = EvaluationClient()
@@ -57,7 +57,7 @@ def test_parse_submission_supports_json_string(monkeypatch, sample_submission_di
 
 
 def test_download_code_checksum_mismatch_returns_empty(monkeypatch, zip_bytes, make_response) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg())
     c = EvaluationClient()
@@ -71,7 +71,7 @@ def test_download_code_checksum_mismatch_returns_empty(monkeypatch, zip_bytes, m
 
 
 def test_download_code_4xx_no_retry(monkeypatch, make_response) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg())
     c = EvaluationClient()
@@ -81,7 +81,7 @@ def test_download_code_4xx_no_retry(monkeypatch, make_response) -> None:
 
 
 def test_report_result_maps_status_and_posts(monkeypatch, make_response) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg())
     posted = {}
@@ -98,7 +98,7 @@ def test_report_result_maps_status_and_posts(monkeypatch, make_response) -> None
 
 
 def test_create_case_record_posts_backend_status(monkeypatch, make_response) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg())
     captured = {}
@@ -117,7 +117,7 @@ def test_create_case_record_posts_backend_status(monkeypatch, make_response) -> 
 
 
 def test_claim_submission_posts_correctly(monkeypatch, make_response) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg())
     captured = {}
@@ -135,7 +135,7 @@ def test_claim_submission_posts_correctly(monkeypatch, make_response) -> None:
 
 
 def test_unclaim_submission_posts_correctly(monkeypatch, make_response) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg())
     captured = {}
@@ -153,7 +153,7 @@ def test_unclaim_submission_posts_correctly(monkeypatch, make_response) -> None:
 
 
 def test_get_phase_artifact_info_returns_parsed(monkeypatch, make_response) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg())
 
@@ -177,7 +177,7 @@ def test_get_phase_artifact_info_returns_parsed(monkeypatch, make_response) -> N
 
 
 def test_create_gateway_token_returns_token(monkeypatch, make_response) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg())
 
@@ -195,7 +195,7 @@ def test_create_gateway_token_returns_token(monkeypatch, make_response) -> None:
 
 
 def test_get_gateway_token_usage_returns_stats(monkeypatch, make_response) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg())
 
@@ -214,7 +214,7 @@ def test_get_gateway_token_usage_returns_stats(monkeypatch, make_response) -> No
 
 
 def test_revoke_gateway_token_posts_correctly(monkeypatch, make_response) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg())
     captured = {}
@@ -232,7 +232,7 @@ def test_revoke_gateway_token_posts_correctly(monkeypatch, make_response) -> Non
 
 
 def test_revision_create_and_list_use_slug(monkeypatch, make_response) -> None:
-    from .. import client as mod
+    import evaluation.client as mod
 
     monkeypatch.setattr(mod, "get_config", lambda: _cfg())
     calls = {"post": None, "get": None}
