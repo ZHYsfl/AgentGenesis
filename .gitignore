@@ -20,3 +20,5 @@ backend/
 skills/
 agent_genesis.egg-info/
 uv.lock
+go.work
+go.work.sum
