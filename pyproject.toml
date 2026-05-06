@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-genesis"
-version = "0.0.50"
+version = "0.0.51"
 description = "Agent Genesis evaluation SDK."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -45,6 +45,9 @@ dev = [
 [project.urls]
 Homepage = "https://agent-genesis-ai.com"
 
+[project.scripts]
+agent-genesis-solverpkg = "agent_genesis.local.build_solver_package:main"
+
 [tool.setuptools]
 packages = [
   "agent_genesis",
@@ -59,7 +62,7 @@ license-files = ["LICENSE"]
 "agent_genesis" = "."
 "agent_genesis.runtime" = "runtime"
 "agent_genesis.proto" = "proto"
-"agent_genesis.tool_calling" = "../tool_calling"
+"agent_genesis.tool_calling" = "tool_calling"
 "agent_genesis.local" = "local"
 
 [tool.setuptools.package-data]

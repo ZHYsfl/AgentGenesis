@@ -22,3 +22,9 @@ agent_genesis.egg-info/
 uv.lock
 go.work
 go.work.sum
+
+build/
+dist/
+
+*.whl
+*.exe

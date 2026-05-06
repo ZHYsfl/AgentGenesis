@@ -147,4 +147,4 @@ try:
     from importlib.metadata import version as _pkg_version, PackageNotFoundError as _PNF
     __version__: str = _pkg_version("agent-genesis")
 except Exception:
-    __version__ = "0.0.50"
+    __version__ = "0.0.51"
