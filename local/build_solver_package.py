@@ -32,7 +32,7 @@ def _safe_write(zf: zipfile.ZipFile, name: str, data: bytes | str) -> None:
     clean = posixpath.normpath(name.lstrip("/"))
     if ".." in clean.split("/"):
         raise ValueError(f"invalid zip entry: {name}")
-    zf.writestr(name, data)
+    zf.writestr(clean, data)
 
 
 def _read_artifact_files(artifact_b64: str) -> dict[str, bytes]:
