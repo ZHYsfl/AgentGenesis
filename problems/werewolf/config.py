@@ -21,7 +21,7 @@ class WerewolfConfig(PhaseConfig):
     num_cases: int = 3
     min_passed_cases: Optional[int] = 2  # Pass when at least one case wins
     parallel_cases: int = 1
-    sandbox_cpu_count: int = 0
+    sandbox_cpu_count: float = 0
     memory_limit_mb: int = 0
     sandbox_timeout: int = 3000
     case_idle_timeout: int = 120

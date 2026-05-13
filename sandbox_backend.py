@@ -232,7 +232,7 @@ def create_docker_sandbox(
     *,
     image: Optional[str] = None,
     timeout: int = 300,
-    cpu_count: Optional[int] = None,
+    cpu_count: Optional[float] = None,
     memory_mb: Optional[int] = None,
 ) -> DockerSandbox:
     """Create a new Docker container and return a ``DockerSandbox`` wrapper.
