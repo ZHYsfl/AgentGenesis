@@ -265,6 +265,60 @@ def build_user_envs(
     return envs
 
 
+def build_local_judge_envs(
+    *,
+    config: Any,
+    llm_model: str,
+    llm_base_url: str,
+    llm_api_key: str,
+    llm_extra_body: dict[str, Any] | None = None,
+) -> dict[str, str]:
+    """Build judge env vars for local evaluation (no submission object)."""
+    envs: dict[str, str] = {
+        "PHASE_CONFIG": json.dumps(config.model_dump(), ensure_ascii=False),
+        "PYTHONPATH": "/workspace/judge",
+        "DUAL_SANDBOX_MODE": "judge",
+        "PYTHONUNBUFFERED": "1",
+    }
+    extra_env = getattr(config, "judge_envs", {}) or {}
+    if isinstance(extra_env, dict):
+        for k, v in extra_env.items():
+            if k and isinstance(v, (str, int, float, bool)):
+                envs[str(k)] = str(v)
+    envs.update(build_llm_env_vars(llm_api_key, llm_base_url))
+    envs["LLM_MODEL"] = llm_model
+    if llm_extra_body:
+        envs["LLM_EXTRA_BODY"] = json.dumps(llm_extra_body, ensure_ascii=False)
+    return envs
+
+
+def build_local_user_envs(
+    *,
+    config: Any,
+    llm_model: str,
+    llm_base_url: str,
+    llm_api_key: str,
+    llm_extra_body: dict[str, Any] | None = None,
+) -> dict[str, str]:
+    """Build user env vars for local evaluation (no submission object)."""
+    envs: dict[str, str] = {
+        "PHASE_CONFIG": json.dumps(config.model_dump(), ensure_ascii=False),
+        "PYTHONPATH": "/workspace/user",
+        "DUAL_SANDBOX_MODE": "user",
+        "PYTHONUNBUFFERED": "1",
+    }
+    extra_env = getattr(config, "judge_envs", {}) or {}
+    if isinstance(extra_env, dict):
+        for k, v in extra_env.items():
+            if k and isinstance(v, (str, int, float, bool)):
+                envs[str(k)] = str(v)
+    envs.update(build_llm_env_vars(llm_api_key, llm_base_url))
+    envs["LLM_MODEL"] = llm_model
+    if llm_extra_body:
+        envs["LLM_EXTRA_BODY"] = json.dumps(llm_extra_body, ensure_ascii=False)
+    return envs
+
+
 def load_grpc_bridge_support_files(base_file: str) -> dict[str, bytes]:
     root = Path(base_file).resolve().parent
     proto_base = root / "proto"
