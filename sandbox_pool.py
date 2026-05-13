@@ -420,7 +420,7 @@ class SandboxManager:
         self,
         sandbox_timeout: int,
         template_id: Optional[str] = None,
-        cpu_count: Optional[int] = None,
+        cpu_count: Optional[float] = None,
         memory_mb: Optional[int] = None,
     ) -> Sandbox:
         acquired = self._semaphore.acquire(timeout=60)
@@ -496,7 +496,7 @@ class SandboxManager:
 def create_sandbox(
     sandbox_timeout: int,
     template_id: Optional[str] = None,
-    cpu_count: Optional[int] = None,
+    cpu_count: Optional[float] = None,
     memory_mb: Optional[int] = None,
 ) -> Sandbox:
     return SandboxManager.get_instance().create(
@@ -505,6 +505,14 @@ def create_sandbox(
         cpu_count=cpu_count,
         memory_mb=memory_mb,
     )
+
+
+def shutdown_all_sandboxes() -> None:
+    """Force destroy all active sandboxes. Used for emergency cleanup on Ctrl+C."""
+    try:
+        SandboxManager.get_instance().shutdown()
+    except Exception as e:
+        logger.warning("Emergency sandbox shutdown error: %s", e)
 
 
 def destroy_sandbox(sandbox: Sandbox) -> None:

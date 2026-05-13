@@ -1,42 +1,15 @@
-"""Local Evaluation SDK
+"""Local Evaluation SDK exports."""
 
-Enables developers to run evaluations locally without cloud services.
+from __future__ import annotations
 
-Basic Usage:
-    from evaluation.local import LocalEvaluator, LLMConfig
+from typing import TYPE_CHECKING
 
-    # Configure LLM
-    llm_config = LLMConfig(
-        model="deepseek-chat",
-        base_url="https://api.deepseek.com",
-        api_key="your-api-key",
-        # extra_body={"enable_thinking": False},
-    )
+if TYPE_CHECKING:
+    from agent_genesis.tool_calling import LLMConfig
 
-    # Create evaluator
-    evaluator = LocalEvaluator(
-        problem_path="problems/interrupt_judge",
-        user_code_path="answer/interrupt_judge/solution.py",
-        llm_config=llm_config,
-    )
-
-    # Run evaluation
-    result = evaluator.evaluate()
-    print(f"Passed: {result.passed_cases}/{result.total_cases}")
-
-Streaming Evaluation (with visualization):
-    from evaluation.local import TerminalVisualizer
-
-    visualizer = TerminalVisualizer(show_oa_sequence=True)
-    for event in evaluator.evaluate_stream():
-        visualizer.on_event(event)
-"""
-
-from agent_genesis.tool_calling import LLMConfig
-
-from .evaluator import LocalEvaluator
-from .eval_types import EvalEvent, EvalEventType
-from .visualization import TerminalVisualizer
+    from .eval_types import EvalEvent, EvalEventType
+    from .evaluator import LocalEvaluator
+    from .visualization import TerminalVisualizer
 
 __all__ = [
     "LocalEvaluator",
@@ -45,3 +18,26 @@ __all__ = [
     "EvalEventType",
     "TerminalVisualizer",
 ]
+
+_LOCAL_LAZY_IMPORTS: dict[str, tuple[str, str]] = {
+    "LocalEvaluator": (".evaluator", "LocalEvaluator"),
+    "LLMConfig": ("agent_genesis.tool_calling", "LLMConfig"),
+    "EvalEvent": (".eval_types", "EvalEvent"),
+    "EvalEventType": (".eval_types", "EvalEventType"),
+    "TerminalVisualizer": (".visualization", "TerminalVisualizer"),
+}
+
+
+def __getattr__(name: str):  # noqa: ANN001
+    if name in _LOCAL_LAZY_IMPORTS:
+        import importlib
+
+        module_path, attr = _LOCAL_LAZY_IMPORTS[name]
+        if module_path.startswith("."):
+            mod = importlib.import_module(module_path, __package__)
+        else:
+            mod = importlib.import_module(module_path)
+        val = getattr(mod, attr)
+        globals()[name] = val
+        return val
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

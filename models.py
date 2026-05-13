@@ -80,7 +80,7 @@ class PhaseConfig(BaseModel):
     num_cases: int = 10
     min_passed_cases: Optional[int] = None  # Pass when passed_cases >= this; None = all must pass
     parallel_cases: int = 1
-    sandbox_cpu_count: int = 0
+    sandbox_cpu_count: float = 0
     memory_limit_mb: int = 0
     sandbox_timeout: int = 400
     case_idle_timeout: int = 300

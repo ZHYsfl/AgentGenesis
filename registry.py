@@ -114,6 +114,25 @@ def inject_visibility_manifest(artifact_base64: str, private_files: list[str]) -
     return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 
+def prepare_phase_data_for_registration(problem: ProblemConfig, phase: PhaseConfig) -> dict:
+    phase_data = phase.model_dump()
+
+    artifact_b64 = phase_data.get("artifact_base64", "")
+    private_files = phase_data.pop("private_files", None)
+    if artifact_b64 and private_files is not None:
+        phase_data["artifact_base64"] = inject_visibility_manifest(artifact_b64, private_files)
+        artifact_b64 = phase_data["artifact_base64"]
+
+    if artifact_b64:
+        phase_data["artifact_checksum"] = compute_artifact_checksum(artifact_b64)
+        try:
+            phase_data["artifact_size"] = len(base64.b64decode(artifact_b64))
+        except Exception:
+            phase_data["artifact_size"] = 0
+
+    return phase_data
+
+
 class ProblemRegistry:
     _instance: Optional["ProblemRegistry"] = None
     
@@ -219,22 +238,17 @@ class ProblemRegistry:
         return False
     
     def _prepare_phase_data(self, problem: ProblemConfig, phase: PhaseConfig) -> dict:
-        phase_data = phase.model_dump()
-
+        phase_data = prepare_phase_data_for_registration(problem, phase)
         artifact_b64 = phase_data.get("artifact_base64", "")
-        private_files = phase_data.pop("private_files", None)
-        if artifact_b64 and private_files is not None:
-            phase_data["artifact_base64"] = inject_visibility_manifest(artifact_b64, private_files)
-            artifact_b64 = phase_data["artifact_base64"]
 
         if artifact_b64:
-            local_checksum = compute_artifact_checksum(artifact_b64)
+            local_checksum = phase_data.get("artifact_checksum", "") or compute_artifact_checksum(artifact_b64)
             existing_checksum = self._get_existing_checksum(problem.title, phase.phase_order)
             if local_checksum and local_checksum == existing_checksum:
                 logger.info(f"Artifact unchanged, skipping upload (checksum={local_checksum[:16]}...)")
                 del phase_data["artifact_base64"]
                 phase_data["artifact_checksum"] = local_checksum
-        
+
         return phase_data
     
     def _register_phase(

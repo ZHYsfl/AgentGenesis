@@ -30,8 +30,16 @@ def to_positive_int(raw: Any) -> Optional[int]:
     return value if value > 0 else None
 
 
-def resolve_sandbox_resources(config: Any) -> tuple[Optional[int], Optional[int]]:
-    cpu_count = to_positive_int(
+def to_positive_float(raw: Any) -> Optional[float]:
+    try:
+        value = float(raw)
+    except Exception:
+        return None
+    return value if value > 0 else None
+
+
+def resolve_sandbox_resources(config: Any) -> tuple[Optional[float], Optional[int]]:
+    cpu_count = to_positive_float(
         getattr(config, "sandbox_cpu_count", None) or getattr(config, "cpu_count", None)
     )
     memory_mb = to_positive_int(
