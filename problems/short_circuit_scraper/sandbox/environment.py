@@ -124,7 +124,7 @@ class ShortCircuitScraperEnvironment:
     # Scoring
     # ------------------------------------------------------------------
 
-    def compute_score(self) -> int:
+    def compute_score(self) -> float:
         return 100 if self._success else 0
 
     # ------------------------------------------------------------------

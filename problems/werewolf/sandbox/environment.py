@@ -115,7 +115,7 @@ class WerewolfEnvironment:
         """Pass if game ended with a real winner (wolf or good). Fail if ended due to agent error."""
         return self.winner in ("good", "wolf")
 
-    def compute_score(self) -> int:
+    def compute_score(self) -> float:
         """100 if good wins, 50 if wolf wins, 0 if error (agent called wrong tool)."""
         if self.winner == "good":
             return 100

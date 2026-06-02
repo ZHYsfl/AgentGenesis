@@ -60,7 +60,7 @@ def test_run_parallel_cases_handles_case_failure(monkeypatch) -> None:
         idx = kwargs["case_index"]
         if idx == 0:
             raise RuntimeError("case fail")
-        return CaseResult(case_index=idx, status=CaseStatus.PASSED, score=1)
+        return CaseResult(case_index=idx, status=CaseStatus.PASSED, score=1.0)
 
     monkeypatch.setattr(ev, "_run_single_case", _run_single)
     out = ev._run_parallel_cases(
@@ -105,7 +105,7 @@ def test_evaluate_additional_branches(monkeypatch) -> None:
     monkeypatch.setattr(
         ev,
         "_run_parallel_cases",
-        lambda **kwargs: [CaseResult(case_index=0, status=CaseStatus.PASSED, score=1)],
+        lambda **kwargs: [CaseResult(case_index=0, status=CaseStatus.PASSED, score=1.0)],
     )
     monkeypatch.setattr(ev, "_get_client", lambda: SimpleNamespace(get_gateway_token_usage=lambda submit_id: {"used_chars": 12, "used_requests": 3}))
     revoked = {"ok": False}
@@ -126,7 +126,7 @@ def test_run_single_case_uses_handle_process_contract(monkeypatch) -> None:
 
     def _capture_run_pair_session(**kwargs):  # type: ignore[no-untyped-def]
         captured["deps"] = kwargs["deps"]
-        return CaseResult(case_index=0, status=CaseStatus.PASSED, score=1)
+        return CaseResult(case_index=0, status=CaseStatus.PASSED, score=1.0)
 
     monkeypatch.setattr(dse_mod, "run_sandbox_pair_session", _capture_run_pair_session)
     monkeypatch.setattr(dse_mod, "get_or_create_template", lambda *args, **kwargs: "test:latest")

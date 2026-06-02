@@ -14,8 +14,10 @@ from typing import Any, Optional
 from .config import get_config
 from .sandbox_backend import (
     DockerSandbox,
+    LocalSandbox,
     Sandbox,
     create_docker_sandbox,
+    create_local_sandbox,
     pip_index_env_from_host,
 )
 
@@ -493,17 +495,98 @@ class SandboxManager:
         logger.info("Sandbox manager stopped")
 
 
+# ---------------------------------------------------------------------------
+# SandboxBackend abstraction (Open/Closed)
+# ---------------------------------------------------------------------------
+
+class SandboxBackend:
+    """Abstract backend for creating and destroying sandboxes."""
+
+    def create(
+        self,
+        sandbox_timeout: int,
+        template_id: Optional[str] = None,
+        cpu_count: Optional[float] = None,
+        memory_mb: Optional[int] = None,
+        pip_dependencies: Optional[list[str]] = None,
+    ) -> Sandbox:
+        raise NotImplementedError
+
+    def destroy(self, sandbox: Sandbox) -> None:
+        raise NotImplementedError
+
+
+class DockerSandboxBackend(SandboxBackend):
+    """Uses SandboxManager (Docker containers)."""
+
+    def create(
+        self,
+        sandbox_timeout: int,
+        template_id: Optional[str] = None,
+        cpu_count: Optional[float] = None,
+        memory_mb: Optional[int] = None,
+        pip_dependencies: Optional[list[str]] = None,
+    ) -> Sandbox:
+        return SandboxManager.get_instance().create(
+            sandbox_timeout=sandbox_timeout,
+            template_id=template_id,
+            cpu_count=cpu_count,
+            memory_mb=memory_mb,
+        )
+
+    def destroy(self, sandbox: Sandbox) -> None:
+        SandboxManager.get_instance().destroy(sandbox)
+
+
+class LocalSandboxBackend(SandboxBackend):
+    """Uses LocalSandbox (host subprocesses + temp dirs)."""
+
+    def create(
+        self,
+        sandbox_timeout: int,
+        template_id: Optional[str] = None,
+        cpu_count: Optional[float] = None,
+        memory_mb: Optional[int] = None,
+        pip_dependencies: Optional[list[str]] = None,
+    ) -> Sandbox:
+        return create_local_sandbox(
+            image=template_id,
+            timeout=sandbox_timeout,
+            cpu_count=cpu_count,
+            memory_mb=memory_mb,
+            pip_dependencies=pip_dependencies,
+        )
+
+    def destroy(self, sandbox: Sandbox) -> None:
+        sandbox.close()
+
+
+_sandbox_backend: SandboxBackend | None = None
+
+
+def _get_sandbox_backend() -> SandboxBackend:
+    global _sandbox_backend
+    if _sandbox_backend is None:
+        if os.environ.get("AG_NO_DOCKER", "").lower() in ("1", "true", "yes"):
+            _sandbox_backend = LocalSandboxBackend()
+        else:
+            _sandbox_backend = DockerSandboxBackend()
+    return _sandbox_backend
+
+
 def create_sandbox(
     sandbox_timeout: int,
     template_id: Optional[str] = None,
     cpu_count: Optional[float] = None,
     memory_mb: Optional[int] = None,
+    pip_dependencies: Optional[list[str]] = None,
 ) -> Sandbox:
-    return SandboxManager.get_instance().create(
+    return _get_sandbox_backend().create(
         sandbox_timeout=sandbox_timeout,
         template_id=template_id,
         cpu_count=cpu_count,
         memory_mb=memory_mb,
+        pip_dependencies=pip_dependencies,
     )
 
 
@@ -516,7 +599,7 @@ def shutdown_all_sandboxes() -> None:
 
 
 def destroy_sandbox(sandbox: Sandbox) -> None:
-    SandboxManager.get_instance().destroy(sandbox)
+    _get_sandbox_backend().destroy(sandbox)
 
 
 def get_sandbox_stats() -> dict:

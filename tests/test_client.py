@@ -92,7 +92,7 @@ def test_report_result_maps_status_and_posts(monkeypatch, make_response) -> None
 
     monkeypatch.setattr(mod.requests, "post", _post)
     c = EvaluationClient()
-    ok = c.report_result(11, PhaseResult(status=PhaseStatus.ERROR, score=1), max_retries=1)
+    ok = c.report_result(11, PhaseResult(status=PhaseStatus.ERROR, score=1.0), max_retries=1)
     assert ok is True
     assert posted["payload"]["status"] == "failed"
 

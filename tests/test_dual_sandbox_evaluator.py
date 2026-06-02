@@ -86,7 +86,7 @@ def test_extract_and_parse_history_and_case_result() -> None:
     )
     assert parsed.status == CaseStatus.ERROR
     assert parsed.case_index == 2
-    assert parsed.score == 3
+    assert parsed.score == 3.0
     assert parsed.chars_used == 11
     assert parsed.requests_used == 2
     parsed_unknown = parse_case_result({"status": "something_new"}, fallback_index=9)

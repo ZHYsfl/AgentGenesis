@@ -15,6 +15,13 @@ def to_int(value: Any, default: int = 0) -> int:
         return default
 
 
+def to_float(value: Any, default: float = 0.0) -> float:
+    try:
+        return float(value)
+    except Exception:
+        return default
+
+
 def parse_case_result(msg: dict[str, Any], fallback_index: int) -> CaseResult:
     idx = to_int(msg.get("case_index", fallback_index), fallback_index)
     status_str = str(msg.get("status", "failed")).lower()
@@ -37,7 +44,7 @@ def parse_case_result(msg: dict[str, Any], fallback_index: int) -> CaseResult:
     return CaseResult(
         case_index=idx,
         status=status_map.get(status_str, CaseStatus.FAILED),
-        score=to_int(msg.get("score", 0) or 0, 0),
+        score=to_float(msg.get("score", 0) or 0, 0.0),
         time_used=to_int(msg.get("time_used", 0) or 0, 0),
         memory_used=to_int(msg.get("memory_used", 0) or 0, 0),
         # LLM usage fields are optional in judge payload.

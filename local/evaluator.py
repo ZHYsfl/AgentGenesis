@@ -388,7 +388,7 @@ class LocalEvaluator:
             # Compute results
             total_cases = len(cases)
             passed_cases = sum(1 for c in cases if c.status == CaseStatus.PASSED)
-            score = sum(int(c.score or 0) for c in cases)
+            score = sum(float(c.score or 0) for c in cases)
             cases_elapsed_ms = sum(max(0, int(c.time_used or 0)) for c in cases)
             total_chars = sum(c.chars_used for c in cases)
             total_requests = sum(c.requests_used for c in cases)

@@ -50,7 +50,7 @@ def run_multi_agent_case(
         Whether the case has reached a terminal state.
     is_success : () -> bool
         Whether the good-side has won (called after loop exits).
-    compute_score : () -> int
+    compute_score : () -> float
         Numeric score for the case (0-100).
     build_output_data : () -> dict
         Diagnostic data attached to the ``case_end`` message.
@@ -121,7 +121,7 @@ def run_multi_agent_case(
         score = 0
     elif is_success():
         status = "passed"
-        score = int(compute_score())
+        score = compute_score()
     else:
         status = "failed"
         score = 0

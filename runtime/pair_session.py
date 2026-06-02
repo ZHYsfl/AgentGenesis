@@ -93,6 +93,28 @@ class _SandboxPairSession:
         self.user_envs: dict[str, str] = {}
         self.user_port: int = 50052
         self._user_stderr_offset: int = 0
+        self._event_callbacks: dict[str, Any] = {}
+
+    def set_event_callbacks(
+        self,
+        *,
+        on_observation: Optional[Callable[[int, dict[str, Any]], None]] = None,
+        on_action: Optional[Callable[[int, dict[str, Any]], None]] = None,
+        on_user_log: Optional[Callable[[int, str], None]] = None,
+        on_judge_log: Optional[Callable[[int, str], None]] = None,
+        on_error: Optional[Callable[[int, str], None]] = None,
+    ) -> None:
+        """Inject event callbacks for real-time observation / action / log streaming."""
+        if on_observation is not None:
+            self._event_callbacks["on_observation"] = on_observation
+        if on_action is not None:
+            self._event_callbacks["on_action"] = on_action
+        if on_user_log is not None:
+            self._event_callbacks["on_user_log"] = on_user_log
+        if on_judge_log is not None:
+            self._event_callbacks["on_judge_log"] = on_judge_log
+        if on_error is not None:
+            self._event_callbacks["on_error"] = on_error
 
     def run(self) -> CaseResult:
         try:
@@ -104,23 +126,34 @@ class _SandboxPairSession:
                 score=0,
                 error="no case result returned from session",
             )
+        except Exception as exc:
+            on_error = self._event_callbacks.get("on_error")
+            if on_error is not None:
+                try:
+                    on_error(self.case_index, f"{type(exc).__name__}: {exc}")
+                except Exception:
+                    pass
+            raise
         finally:
             self._cleanup()
 
     def _setup_sandboxes_and_runtime(self) -> None:
         cpu_count, memory_mb = self.deps.resolve_sandbox_resources()
         template_id = self.deps.template_image
+        pip_deps = list(self.config.pip_dependencies)
         self.judge_sb = self.deps.create_sandbox(
             sandbox_timeout=int(self.config.sandbox_timeout),
             template_id=template_id,
             cpu_count=cpu_count,
             memory_mb=memory_mb,
+            pip_dependencies=pip_deps,
         )
         self.user_sb = self.deps.create_sandbox(
             sandbox_timeout=int(self.config.sandbox_timeout),
             template_id=template_id,
             cpu_count=cpu_count,
             memory_mb=memory_mb,
+            pip_dependencies=pip_deps,
         )
 
         logger.info(
@@ -138,10 +171,13 @@ class _SandboxPairSession:
         self.judge_envs = self.deps.build_judge_envs(self.submission, self.gateway_token)
         self.user_envs = self.deps.build_user_envs(self.submission, self.gateway_token)
 
+        judge_listen = self.judge_sb.grpc_bind_address(50051)
+        user_listen = self.user_sb.grpc_bind_address(50052)
+        self.judge_envs["SANDBOX_GRPC_PORT"] = str(judge_listen)
+        self.user_envs["SANDBOX_GRPC_PORT"] = str(user_listen)
+
         judge_port = 50051
         self.user_port = 50052
-        self.judge_envs["SANDBOX_GRPC_PORT"] = str(judge_port)
-        self.user_envs["SANDBOX_GRPC_PORT"] = str(self.user_port)
 
         entrypoint = self.deps.resolve_entrypoint()
         self.judge_process = self.deps.start_background_python(
@@ -218,6 +254,12 @@ class _SandboxPairSession:
             content = r.stdout or ""
             if content:
                 self._user_stderr_offset += len(content.encode("utf-8", "replace"))
+                cb = self._event_callbacks.get("on_user_log")
+                if cb is not None:
+                    try:
+                        cb(self.case_index, content)
+                    except Exception:
+                        pass
             return content
         except Exception:
             return ""
@@ -250,6 +292,35 @@ class _SandboxPairSession:
                 return self.case_index
             return None
 
+        orig_record_obs = self.deps.record_observation_history
+        orig_record_act = self.deps.record_action_history
+
+        def wrapped_record_observation_history(
+            histories: dict[int, list[dict[str, Any]]],
+            case_index: int,
+            msg: dict[str, Any],
+        ) -> None:
+            orig_record_obs(histories, case_index, msg)
+            cb = self._event_callbacks.get("on_observation")
+            if cb is not None:
+                try:
+                    cb(case_index, msg)
+                except Exception:
+                    pass
+
+        def wrapped_record_action_history(
+            histories: dict[int, list[dict[str, Any]]],
+            case_index: int,
+            msg: dict[str, Any],
+        ) -> None:
+            orig_record_act(histories, case_index, msg)
+            cb = self._event_callbacks.get("on_action")
+            if cb is not None:
+                try:
+                    cb(case_index, msg)
+                except Exception:
+                    pass
+
         route_state = run_pair_protocol_router(
             submission_id=self.submission.submit_id,
             deadline=self.deadline,
@@ -263,8 +334,8 @@ class _SandboxPairSession:
             send_to_user=self._send_to_user,
             parse_case_result=self.deps.parse_case_result,
             attach_case_history=self.deps.attach_case_history,
-            record_observation_history=self.deps.record_observation_history,
-            record_action_history=self.deps.record_action_history,
+            record_observation_history=wrapped_record_observation_history,
+            record_action_history=wrapped_record_action_history,
             on_case_start=self.on_case_start,
             on_case_end=self._wrap_on_case_end(self.on_case_end),
             track_per_case_usage=self.track_per_case_usage,

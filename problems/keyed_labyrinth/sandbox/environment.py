@@ -138,7 +138,7 @@ class KeyedLabyrinthEnvironment:
             "出口就在脚下，本 case 成功。",
         ])
 
-    def compute_score(self, optimal_moves: int) -> int:
+    def compute_score(self, optimal_moves: int) -> float:
         if not self.success:
             return 0
         move_over = max(0, self.move_count - optimal_moves)

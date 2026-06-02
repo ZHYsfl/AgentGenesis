@@ -116,7 +116,7 @@ class MazeEnvironment:
 
         return self._speak("move_ok")
 
-    def compute_score(self, optimal_moves: int) -> int:
+    def compute_score(self, optimal_moves: int) -> float:
         """
         Compute score (0-100) based on success and move efficiency.
 

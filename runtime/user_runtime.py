@@ -168,7 +168,7 @@ def serve_user_runtime(
     adapter_preset: str = "default",
 ) -> None:
     """Start gRPC server for user bridge."""
-    grpc_port = int(os.getenv("SANDBOX_GRPC_PORT", os.getenv("USER_GRPC_PORT", "50052")))
+    grpc_port = os.getenv("SANDBOX_GRPC_PORT", os.getenv("USER_GRPC_PORT", "50052"))
 
     servicer = UserBridgeServicer(
         solve_attr_name=solve_attr_name,
@@ -183,7 +183,10 @@ def serve_user_runtime(
         ],
     )
     eval_bridge_pb2_grpc.add_SandboxBridgeServicer_to_server(servicer, grpc_server)
-    grpc_server.add_insecure_port(f"[::]:{grpc_port}")
+    if grpc_port.startswith("unix:"):
+        grpc_server.add_insecure_port(grpc_port)
+    else:
+        grpc_server.add_insecure_port(f"[::]:{int(grpc_port)}")
     print(f"[user_bridge] grpc listening on {grpc_port}", file=sys.stderr, flush=True)
     grpc_server.start()
 

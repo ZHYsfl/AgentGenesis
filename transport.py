@@ -46,6 +46,8 @@ def resolve_grpc_target(host_or_target: str) -> str:
     raw = str(host_or_target or "").strip()
     if not raw:
         raise ValueError("empty grpc host/target")
+    if raw.startswith("unix:"):
+        return raw
 
     for prefix in ("https://", "http://"):
         if raw.startswith(prefix):
