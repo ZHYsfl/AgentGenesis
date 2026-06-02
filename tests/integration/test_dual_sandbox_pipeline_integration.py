@@ -291,7 +291,7 @@ def test_evaluate_missing_cases_promotes_phase_error(monkeypatch, submission_fac
     monkeypatch.setattr(
         ev,
         "_run_parallel_cases",
-        lambda **kwargs: [CaseResult(case_index=0, status=CaseStatus.PASSED, score=1)],
+        lambda **kwargs: [CaseResult(case_index=0, status=CaseStatus.PASSED, score=1.0)],
     )
     monkeypatch.setattr(dse_mod, "runtime_revoke_gateway_token", lambda *args, **kwargs: None)
 

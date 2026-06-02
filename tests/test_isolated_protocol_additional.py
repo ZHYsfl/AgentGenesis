@@ -215,7 +215,7 @@ def _build_session(
         is_process_alive=lambda p: bool(p),
         describe_process=lambda p: getattr(p, "name", "none"),
         is_likely_mle_exit=lambda sb, path: False,
-        parse_case_result=lambda msg, idx: CaseResult(case_index=idx, status=CaseStatus.PASSED, score=100),
+        parse_case_result=lambda msg, idx: CaseResult(case_index=idx, status=CaseStatus.PASSED, score=100.0),
         attach_case_history=lambda *args, **kwargs: None,
         record_observation_history=lambda *args, **kwargs: None,
         record_action_history=lambda *args, **kwargs: None,
@@ -366,7 +366,7 @@ def test_isolated_session_setup_router_request_send_poll_and_cleanup(monkeypatch
         iso_session_mod,
         "run_pair_protocol_router",
         lambda **kwargs: SimpleNamespace(
-            cases=[CaseResult(case_index=3, status=CaseStatus.PASSED, score=66)]
+            cases=[CaseResult(case_index=3, status=CaseStatus.PASSED, score=66.0)]
         ),
     )
     session._run_router()
@@ -475,7 +475,7 @@ def test_isolated_evaluator_single_case_parallel_and_evaluate_paths(monkeypatch)
     monkeypatch.setattr(
         iso_eval_mod,
         "runtime_parse_case_result",
-        lambda msg, idx: CaseResult(case_index=idx, status=CaseStatus.PASSED, score=100),
+        lambda msg, idx: CaseResult(case_index=idx, status=CaseStatus.PASSED, score=100.0),
     )
     monkeypatch.setattr(iso_eval_mod, "runtime_attach_case_history", lambda *args, **kwargs: None)
     monkeypatch.setattr(iso_eval_mod, "runtime_record_observation_history", lambda *args, **kwargs: None)
@@ -499,7 +499,7 @@ def test_isolated_evaluator_single_case_parallel_and_evaluate_paths(monkeypatch)
             captured["kwargs"] = kwargs
 
         def run(self) -> CaseResult:
-            return CaseResult(case_index=0, status=CaseStatus.PASSED, score=77)
+            return CaseResult(case_index=0, status=CaseStatus.PASSED, score=77.0)
 
     monkeypatch.setattr(iso_eval_mod, "IsolatedMultiAgentSession", _FakeIsoSession)
 
@@ -538,7 +538,7 @@ def test_isolated_evaluator_single_case_parallel_and_evaluate_paths(monkeypatch)
         calls["n"] += 1
         if idx == 1:
             raise RuntimeError("case failed")
-        return CaseResult(case_index=idx, status=CaseStatus.PASSED, score=1)
+        return CaseResult(case_index=idx, status=CaseStatus.PASSED, score=1.0)
 
     monkeypatch.setattr(ev, "_run_single_case", _run_single_case_stub)
     monkeypatch.setattr(iso_eval_mod, "get_config", lambda: SimpleNamespace(max_case_parallelism=8))
@@ -583,8 +583,8 @@ def test_isolated_evaluator_single_case_parallel_and_evaluate_paths(monkeypatch)
         ev,
         "_run_parallel_cases",
         lambda **kwargs: [
-            CaseResult(case_index=0, status=CaseStatus.PASSED, score=60),
-            CaseResult(case_index=1, status=CaseStatus.FAILED, score=0),
+            CaseResult(case_index=0, status=CaseStatus.PASSED, score=60.0),
+            CaseResult(case_index=1, status=CaseStatus.FAILED, score=0.0),
         ],
     )
     rev = {"ok": False}
@@ -771,7 +771,7 @@ def test_isolated_evaluator_additional_branches(monkeypatch) -> None:
     monkeypatch.setattr(
         ev,
         "_run_parallel_cases",
-        lambda **kwargs: [CaseResult(case_index=0, status=CaseStatus.PASSED, score=100)],
+        lambda **kwargs: [CaseResult(case_index=0, status=CaseStatus.PASSED, score=100.0)],
     )
     monkeypatch.setattr(iso_eval_mod, "runtime_revoke_gateway_token", lambda *args, **kwargs: None)
     ok = ev.evaluate(sub, parallel_cases=1)
@@ -794,9 +794,9 @@ def test_isolated_evaluator_additional_branches(monkeypatch) -> None:
             kwargs["on_case_start"](kwargs["case_index"]),
             kwargs["on_case_end"](
                 kwargs["case_index"],
-                CaseResult(case_index=kwargs["case_index"], status=CaseStatus.PASSED, score=1),
+                CaseResult(case_index=kwargs["case_index"], status=CaseStatus.PASSED, score=1.0),
             ),
-            CaseResult(case_index=kwargs["case_index"], status=CaseStatus.PASSED, score=1),
+            CaseResult(case_index=kwargs["case_index"], status=CaseStatus.PASSED, score=1.0),
         )[-1],
     )
     out_cases = IsolatedMultiAgentEvaluator._run_parallel_cases(

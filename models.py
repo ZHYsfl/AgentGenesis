@@ -179,7 +179,7 @@ class TestCase(BaseModel):
 class CaseResult(BaseModel):
     case_index: int = 0
     status: CaseStatus = CaseStatus.PENDING
-    score: int = 0
+    score: float = 0.0
     time_used: int = 0
     memory_used: int = 0
     chars_used: int = 0
@@ -193,7 +193,7 @@ class CaseResult(BaseModel):
 
 class PhaseResult(BaseModel):
     status: PhaseStatus = PhaseStatus.PENDING
-    score: int = 0
+    score: float = 0.0
     total_cases: int = 0
     passed_cases: int = 0
     total_time: int = 0

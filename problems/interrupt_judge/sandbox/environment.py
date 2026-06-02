@@ -42,7 +42,7 @@ class InterruptJudgeEnvironment:
         if not self.labels:
             return {
                 "accuracy": 0,
-                "score": 0,
+                "score": 0.0,
                 "correct": 0,
                 "total": 0,
                 "elapsed_seconds": elapsed,

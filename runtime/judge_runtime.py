@@ -111,7 +111,7 @@ class JudgeRuntime:
 def serve_judge_runtime(main_fn: Callable[[JudgeRuntime], None]) -> None:
     """Start gRPC server for judge bridge, then run *main_fn*."""
     runtime = JudgeRuntime()
-    grpc_port = int(os.getenv("SANDBOX_GRPC_PORT", os.getenv("JUDGE_GRPC_PORT", "50051")))
+    grpc_port = os.getenv("SANDBOX_GRPC_PORT", os.getenv("JUDGE_GRPC_PORT", "50051"))
 
     _MAX_MSG = 50 * 1024 * 1024
     grpc_server = grpc.server(
@@ -125,7 +125,10 @@ def serve_judge_runtime(main_fn: Callable[[JudgeRuntime], None]) -> None:
         JudgeRuntime._BridgeServicer(runtime),
         grpc_server,
     )
-    grpc_server.add_insecure_port(f"[::]:{grpc_port}")
+    if grpc_port.startswith("unix:"):
+        grpc_server.add_insecure_port(grpc_port)
+    else:
+        grpc_server.add_insecure_port(f"[::]:{int(grpc_port)}")
     print(f"[judge_bridge] grpc listening on {grpc_port}", file=sys.stderr, flush=True)
     grpc_server.start()
 

@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import io
 import logging
+import os
+import subprocess
 import tarfile
+import tempfile
 import threading
 import time
+from pathlib import Path
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Optional, Union
@@ -30,13 +34,16 @@ class CommandResult:
 
 @dataclass
 class ExecHandle:
-    """Handle to a background process inside a Docker container."""
+    """Handle to a background process inside a Docker container or local subprocess."""
 
-    _api: APIClient = field(repr=False)
+    _api: APIClient = field(repr=False, default=None)
     _exec_id: str = ""
     command: str = ""
+    _local_proc: Optional[subprocess.Popen] = field(repr=False, default=None)
 
     def is_running(self) -> bool:
+        if self._local_proc is not None:
+            return self._local_proc.poll() is None
         try:
             info = self._api.exec_inspect(self._exec_id)
             return info.get("Running", False)
@@ -44,6 +51,16 @@ class ExecHandle:
             return False
 
     def kill(self) -> None:
+        if self._local_proc is not None:
+            try:
+                self._local_proc.terminate()
+            except Exception:
+                pass
+            try:
+                self._local_proc.kill()
+            except Exception:
+                pass
+            return
         """Best-effort kill: there is no direct Docker API to kill an exec.
 
         We rely on the container being stopped/removed to terminate all execs.
@@ -99,9 +116,14 @@ class DockerSandbox(Sandbox):
     def __init__(self, container: Container) -> None:
         self._container = container
         self._container.reload()
-        self._ip: str = (
-            self._container.attrs.get("NetworkSettings", {}).get("IPAddress", "")
-        )
+        ip: str = self._container.attrs.get("NetworkSettings", {}).get("IPAddress", "")
+        if not ip:
+            networks = self._container.attrs.get("NetworkSettings", {}).get("Networks", {})
+            for net_info in networks.values():
+                ip = net_info.get("IPAddress", "")
+                if ip:
+                    break
+        self._ip: str = ip
         self._id: str = self._container.short_id
 
     @property
@@ -268,3 +290,185 @@ def create_docker_sandbox(
     sandbox = DockerSandbox(container)
     logger.info("Docker sandbox created: id=%s, image=%s", sandbox.id, image)
     return sandbox
+
+
+# ---------------------------------------------------------------------------
+# Local sandbox implementation (no Docker)
+# ---------------------------------------------------------------------------
+
+
+class _LocalExecHandle:
+    """Minimal ExecHandle stand-in for LocalSandbox background processes."""
+
+    def __init__(self, proc: subprocess.Popen) -> None:
+        self._proc = proc
+
+    def is_running(self) -> bool:
+        return self._proc.poll() is None
+
+    def kill(self) -> None:
+        try:
+            self._proc.terminate()
+        except Exception:
+            pass
+        try:
+            self._proc.kill()
+        except Exception:
+            pass
+
+
+class LocalSandbox(Sandbox):
+    """Host-process sandbox using a temporary directory and subprocesses."""
+
+    def __init__(self, root_dir: Path, venv_dir: Path, sandbox_id: str) -> None:
+        self._root = root_dir
+        self._venv = venv_dir
+        self._id = sandbox_id
+        self._bg_procs: list[subprocess.Popen] = []
+
+    @property
+    def id(self) -> str:
+        return self._id
+
+    def _resolve_command(self, command: str) -> str:
+        """Rewrite /workspace paths to the actual sandbox root directory."""
+        return command.replace("/workspace", str(self._root / "workspace"))
+
+    def run_command(
+        self,
+        command: str,
+        *,
+        timeout: int = 30,
+        envs: Optional[dict[str, str]] = None,
+        background: bool = False,
+    ) -> Union[CommandResult, ExecHandle]:
+        env = dict(os.environ)
+        env["VIRTUAL_ENV"] = str(self._venv)
+        env["PATH"] = f"{self._venv}/bin:" + env.get("PATH", "")
+        if envs:
+            env.update(envs)
+
+        cwd = str(self._root)
+        cmd = ["bash", "-lc", self._resolve_command(command)]
+
+        if background:
+            log_dir = Path("/tmp/ag-logs")
+            log_dir.mkdir(exist_ok=True)
+            out = log_dir / f"local-{self._id}.out"
+            err = log_dir / f"local-{self._id}.err"
+            out_fh = open(out, "a")
+            err_fh = open(err, "a")
+            proc = subprocess.Popen(
+                cmd,
+                cwd=cwd,
+                env=env,
+                stdout=out_fh,
+                stderr=err_fh,
+            )
+            self._bg_procs.append(proc)
+            return ExecHandle(
+                _api=None,
+                _exec_id="",
+                command=command,
+                _local_proc=proc,
+            )
+
+        result = subprocess.run(
+            cmd,
+            cwd=cwd,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+        return CommandResult(
+            stdout=result.stdout,
+            stderr=result.stderr,
+            exit_code=result.returncode,
+        )
+
+    def write_files(self, files: list[dict[str, Any]]) -> None:
+        for entry in files:
+            path: str = entry["path"]
+            data: bytes = entry["data"] if isinstance(entry["data"], bytes) else entry["data"].encode("utf-8")
+            target = self._root / path.lstrip("/")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+
+    def get_host(self, port: int) -> str:
+        return f"unix:/tmp/ag-sb-{self._id}-{port}.sock"
+
+    def grpc_bind_address(self, port: int) -> str:
+        return self.get_host(port)
+
+    def get_metrics(self) -> list[dict[str, Any]]:
+        return []
+
+    def close(self) -> None:
+        for proc in self._bg_procs:
+            try:
+                proc.terminate()
+            except Exception:
+                pass
+            try:
+                proc.kill()
+            except Exception:
+                pass
+        self._bg_procs.clear()
+        try:
+            import shutil
+            shutil.rmtree(self._root, ignore_errors=True)
+        except Exception:
+            pass
+        for sock in Path("/tmp").glob(f"ag-sb-{self._id}-*.sock"):
+            try:
+                sock.unlink()
+            except Exception:
+                pass
+
+    def kill(self) -> None:
+        self.close()
+
+
+def create_local_sandbox(
+    *,
+    image: Optional[str] = None,
+    timeout: int = 300,
+    cpu_count: Optional[float] = None,
+    memory_mb: Optional[int] = None,
+    pip_dependencies: Optional[list[str]] = None,
+) -> LocalSandbox:
+    """Create a new local sandbox (temporary directory + venv).
+
+    The *image*, *cpu_count*, and *memory_mb* arguments are ignored; they
+    exist purely to match the signature of ``create_docker_sandbox``.
+    """
+    root_dir = Path(tempfile.mkdtemp(prefix="ag-sb-"))
+    venv_dir = root_dir / "workspace" / ".venv"
+    venv_dir.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(
+        ["uv", "venv", str(venv_dir), "--system-site-packages"],
+        check=True,
+        capture_output=True,
+    )
+    # Install agent-genesis into the sandbox venv so bridge scripts can import it.
+    repo_root = Path(__file__).resolve().parents[1]
+    ag_path = repo_root / "AgentGenesis"
+    subprocess.run(
+        ["uv", "pip", "install", "--python", str(venv_dir / "bin" / "python"), "-e", str(ag_path)],
+        check=True,
+        capture_output=True,
+    )
+
+    if pip_dependencies:
+        deps = " ".join(pip_dependencies)
+        workspace_dir = root_dir / "workspace"
+        subprocess.run(
+            ["bash", "-lc", f"cd {workspace_dir} && source .venv/bin/activate && uv pip install -q {deps}"],
+            check=True,
+            capture_output=True,
+        )
+    sandbox_id = root_dir.name.replace("ag-sb-", "")
+    logger.info("Local sandbox created: id=%s, root=%s", sandbox_id, root_dir)
+    return LocalSandbox(root_dir, venv_dir, sandbox_id)

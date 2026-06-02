@@ -108,10 +108,10 @@ def test_process_submission_cleanup_and_exception_paths(monkeypatch) -> None:
         def evaluate(self, submission, parallel_cases=1, on_case_start=None, on_case_end=None):
             if on_case_start:
                 on_case_start(0)
-            case = CaseResult(case_index=0, status=CaseStatus.PASSED, score=1)
+            case = CaseResult(case_index=0, status=CaseStatus.PASSED, score=1.0)
             if on_case_end:
                 on_case_end(0, case)
-            return PhaseResult(status=PhaseStatus.SUCCESS, cases=[case], passed_cases=1, total_cases=1, score=1)
+            return PhaseResult(status=PhaseStatus.SUCCESS, cases=[case], passed_cases=1, total_cases=1, score=1.0)
 
         def cleanup(self):
             raise RuntimeError("cleanup failed")

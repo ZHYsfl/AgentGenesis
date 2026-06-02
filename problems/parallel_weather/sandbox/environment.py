@@ -181,7 +181,7 @@ class ParallelWeatherEnvironment:
     # Scoring
     # ------------------------------------------------------------------
 
-    def compute_score(self) -> int:
+    def compute_score(self) -> float:
         if not self._success:
             return 0
         return 100 if self.elapsed_time <= self._max_allowed_time else 30

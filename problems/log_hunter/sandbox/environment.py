@@ -43,7 +43,7 @@ class LogHunterEnvironment:
                 score = 100
             elif elapsed <= 75:
                 # 线性插值：10s->100分, 75s->10分
-                score = int(100 - (elapsed - 10) * (90 / 65))
+                score = 100 - (elapsed - 10) * (90 / 65)
             else:
                 score = 0
 
@@ -65,7 +65,7 @@ class LogHunterEnvironment:
     def done(self) -> bool:
         return self.user_answers is not None
 
-    def get_score(self) -> int:
+    def get_score(self) -> float:
         """Return the computed score from last submission"""
         if self._last_result:
             return self._last_result.get("score", 0)

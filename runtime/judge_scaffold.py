@@ -28,7 +28,7 @@ def run_case_scheduler(
 def send_eval_complete(runtime: JudgeRuntime, results: list[dict[str, Any]]) -> None:
     passed = sum(1 for r in results if r.get("status") == "passed")
     total = len(results)
-    score = round(sum(int(r.get("score", 0) or 0) for r in results) / total) if total > 0 else 0
+    score = sum(float(r.get("score", 0) or 0) for r in results) / total if total > 0 else 0.0
     runtime.send(
         {
             "type": "eval_complete",
@@ -49,7 +49,7 @@ def run_turn_based_case(
     build_history_event: Callable[[Any], dict[str, Any]],
     is_done: Callable[[], bool],
     is_success: Callable[[], bool],
-    compute_score: Callable[[], int],
+    compute_score: Callable[[], float],
     build_output_data: Callable[[], dict[str, Any]],
 ) -> dict[str, Any]:
     runtime.send({"type": "case_start", "case_index": case_index})
@@ -106,13 +106,13 @@ def run_turn_based_case(
     elapsed_ms = int((time.time() - start_time) * 1000)
     if case_status_override is not None:
         status = case_status_override
-        score = 0
+        score = compute_score()
     elif is_success():
         status = "passed"
-        score = int(compute_score())
+        score = compute_score()
     else:
         status = "failed"
-        score = 0
+        score = compute_score()
         if user_error is None:
             # Keep a generic fallback so UI can explain non-timeout failures.
             user_error = "case finished without success"

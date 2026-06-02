@@ -37,5 +37,5 @@ class StructuredOutputEnvironment:
         self.success = False
         return "wrong"
 
-    def compute_score(self) -> int:
+    def compute_score(self) -> float:
         return 100 if self.success else 0
