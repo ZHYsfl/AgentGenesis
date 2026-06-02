@@ -199,9 +199,12 @@ def test_real_solution():
     print("=" * 70)
 
     # Set up environment
-    os.environ['LLM_API_KEY'] = 'sk-cp-rqsiHmkcOlKpES7LYmYiCXDcKrsgcJTU0r5LpCR3jsxgArI3HMz8Y70BTrtcC_dGF0C7jFOe7fvg_87HWT6f1Wl2c6LSFZ0bveTUNI5TjnovCbjBIwf1FWk'
-    os.environ['LLM_BASE_URL'] = 'https://api.minimaxi.com/v1'
-    os.environ['LLM_MODEL'] = 'MiniMax-M2.5-highspeed'
+    if not os.environ.get('LLM_API_KEY'):
+        raise RuntimeError("LLM_API_KEY environment variable must be set")
+    if not os.environ.get('LLM_BASE_URL'):
+        raise RuntimeError("LLM_BASE_URL environment variable must be set")
+    if not os.environ.get('LLM_MODEL'):
+        raise RuntimeError("LLM_MODEL environment variable must be set")
 
     # Generate case (160KB = ~40K tokens for quicker test)
     print("\n[1] Generating test case...")

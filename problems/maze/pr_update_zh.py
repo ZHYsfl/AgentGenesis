@@ -38,8 +38,8 @@ def main() -> None:
     load_dotenv(ROOT / ".env", override=True)
     load_dotenv(override=True)
 
-    internal_key = "ag_4c7115402944dba84fc76b368e3ff84e"
-    backend_url = "http://82.157.250.20"
+    internal_key = os.environ.get("AGENT_GENESIS_API_KEY")
+    backend_url = os.environ.get("AGENT_GENESIS_BACKEND_URL")
     if not internal_key or not backend_url:
         raise RuntimeError("Missing INTERNAL_API_KEY or BACKEND_URL")
 

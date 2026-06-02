@@ -33,10 +33,10 @@ load_dotenv(ROOT / ".env", override=True)
 
 def main():
     load_dotenv(override=True)
-    api_key = "ag_4c7115402944dba84fc76b368e3ff84e"
-    base_url = "http://82.157.250.20"
+    api_key = os.environ.get("AGENT_GENESIS_API_KEY")
+    base_url = os.environ.get("AGENT_GENESIS_BACKEND_URL")
     if not api_key or not base_url:
-        raise RuntimeError("Missing INTERNAL_API_KEY or BACKEND_URL")
+        raise RuntimeError("Set AGENT_GENESIS_API_KEY and AGENT_GENESIS_BACKEND_URL before registering")
 
     # Internal mode: system problems use /internal/register-problem
     init_registry(mode=ClientMode.USER, api_key=api_key, backend_url=base_url)
