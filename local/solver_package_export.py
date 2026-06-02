@@ -11,8 +11,9 @@ from typing import Any
 
 def _install_paths(problem_dir: Path) -> None:
     path = str(problem_dir)
-    if path not in sys.path:
-        sys.path.insert(0, path)
+    if path in sys.path:
+        sys.path.remove(path)
+    sys.path.insert(0, path)
 
 
 def _capture_problem(problem_dir: Path) -> Any:
