@@ -61,7 +61,7 @@ A clear and concise description of what you expected to happen.
 **Environment (please complete the following information):**
 - OS: [e.g. Ubuntu 22.04, macOS 14, Windows 11]
 - Python version: [e.g. 3.11.4]
-- AgentGenesis version: [e.g. 0.0.57]
+- AgentGenesis version: [e.g. 0.0.58]
 - Docker version (if applicable): [e.g. 24.0.7]
 
 **Additional context**
