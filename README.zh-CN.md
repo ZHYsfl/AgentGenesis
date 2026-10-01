@@ -14,12 +14,6 @@
   <img src="https://img.shields.io/badge/Docker-服务端必需-2496ED?style=flat-square&logo=docker" alt="需要 Docker">
 </p>
 
-<p>
-  <a href="https://agent-genesis-ai.com">🌐 官网</a> •
-  <a href="http://82.157.250.20/problems">🎮 在线平台</a> •
-  <a href="README.md">🇺🇸 English</a>
-</p>
-
 </div>
 
 ---
